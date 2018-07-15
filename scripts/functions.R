@@ -15,9 +15,19 @@ SIMULATE_ERR <- function(s1, s2, mu, pseudo=1, size=1000, N=10000) {
     return(output)
 }
 
+#' Finds the maximum error, which should occur around the pseudo-count.
+FIND_MAX_ERR <- function(s1, s2, pseudo=1, size=1000, N=10000) {
+    mus <- 10^seq(-3, 3, length.out=100) * pseudo
+    output <- SIMULATE_ERR(s1, s2, mu=mus, pseudo=pseudo, size=size, N=N)
+    max(abs(output))
+}
+
 #' Creating a plot of the maximum errors.
-PLOT_MAX_ERR <- function(sf, mat, col, legend=TRUE) {
-    plot(sf, numeric(length(sf)), ylim=range(mat, na.rm=TRUE), type="n", log="x",
+PLOT_MAX_ERR <- function(sf, mat, col, legend=TRUE, ylim=NULL) {
+    if (is.null(ylim)) {
+        ylim <- range(mat, na.rm=TRUE)
+    }
+    plot(sf, numeric(length(sf)), ylim=ylim, type="n", log="x",
         xlab="First size factor", ylab=expression(Log[2]-"fold change"),
         main=sprintf("Dispersion of %s", disp))
 
