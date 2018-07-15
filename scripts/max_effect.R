@@ -16,20 +16,8 @@ for (disp in c(0, 0.1, 1, 10)) {
         }
     }
 
-    output <- Matrix::forceSymmetric(output, "L")
     output <- output/log(2)
-
-    # Creating a plot.
-    plot(all.sf, numeric(length(all.sf)), ylim=range(output), type="n", log="x",
-        xlab="First size factor", ylab=expression(Log[2]-"fold change"),
-        main=sprintf("Dispersion of %s", disp))
-    for (i in seq_len(nrow(output))) {
-        current <- seq_len(i)
-        lines(all.sf[current], output[i,current], lwd=2)
-        lines(all.sf[current], output[i,current], lwd=1.5, col=col[i])
-        points(all.sf[current], output[i,current], pch=21, bg=col[i], cex=1.5)
-    }
-    legend("topright", fill=col, legend=all.sf, title="Second size factor") 
+    PLOT_MAX_ERR(all.sf, output, col=col)
 }
 dev.off()
 
