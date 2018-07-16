@@ -5,7 +5,6 @@ ncells <- 500
 lambda <- rep(c(1, 100), each=ncells/2)
 ngenes <- 10000
 
-size.fac <- lambda/mean(lambda)
 PLOT_FUN <- function(g1, g2, main) {
     boxplot(list(Smaller=g1, Larger=g2), xlab="", ylab="Mean expression", main=main, col="grey80")
 }
@@ -13,15 +12,17 @@ PLOT_FUN <- function(g1, g2, main) {
 ###################################
 # Creating pictures of common transformations.
 
-pdf("pics/alternatives.pdf", width=10, height=4)
-par(mfrow=c(1,4), mar=c(4.1, 4.1, 4.1, 1.1), cex.lab=1.2)
-
 for (scenario in 1:2) {
     if (scenario==1L) {
         X <- matrix(rpois(ngenes*ncells, lambda=lambda), ncol=ncells, byrow=TRUE)
+        pdf("pics/alternative_pois.pdf", width=4, height=6)
     } else {
         X <- matrix(rnbinom(ngenes*ncells, mu=lambda, size=1), ncol=ncells, byrow=TRUE)
+        pdf("pics/alternative_nb.pdf", width=4, height=6)
     }
+
+    size.fac <- colSums(X)
+    size.fac <- size.fac/mean(size.fac)
 
     # Square rooting.
     rooted <- sqrt( t(t(X)/size.fac) )
@@ -33,7 +34,7 @@ for (scenario in 1:2) {
     log1p <- log2( t(t(X)/size.fac) + 1)
     g1 <- rowMeans(log1p[,lambda==1])
     g2 <- rowMeans(log1p[,lambda==100])
-    PLOT_FUN(g1, g2, main="Log2(X + 1)")
+    PLOT_FUN(g1, g2, main="Log2-transform")
     
     # VST.
     library(DESeq2)
@@ -43,16 +44,16 @@ for (scenario in 1:2) {
     
     g1 <- rowMeans(assay(vst.out)[,lambda==1])
     g2 <- rowMeans(assay(vst.out)[,lambda==100])
-    PLOT_FUN(g1, g2, main="VST")
+    PLOT_FUN(g1, g2, main="DESeq2 VST")
     
     # Our proposed approach.
     pseudo <- log2( t(t(X)/size.fac) + abs(diff(1/range(size.fac))) )
     g1 <- rowMeans(pseudo[,lambda==1])
     g2 <- rowMeans(pseudo[,lambda==100])
     PLOT_FUN(g1, g2, "Increased pseudo-count")
-}
 
-dev.off()
+    dev.off()
+}
 
 ###################################
 # Examining SCnorm's behaviour.

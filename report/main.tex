@@ -75,6 +75,7 @@
 \usepackage{subcaption}
 \captionsetup[subfigure]{justification=centering}
 \usepackage{amsmath}
+\newcommand\code[1]{{\small\texttt{#1}}}
 
 % document begins here
 \begin{document}
@@ -116,7 +117,6 @@ In this report, we describe the nature and impact of the discrepancy between log
 We also show how the added pseudo-count can be increased to cap the discrepancy at the cost of reducing interpretability.
 
 \section{Quantifying the discrepancy}
-
 Let $X_i$ denote a random variable for a non-negative count of a gene $g$ in cell $i$.
 The log-transformed normalized expression value is defined as 
 \[
@@ -175,6 +175,53 @@ For each combination of the first size factor ($s_1$), second size factor ($s_2$
 Maximum differences are only shown for scenarios where $s_1 \ge s_2$, for simplicity.
 }
 \label{fig:maxeffect}
+\end{figure}
+
+\section{Exploring alternative transformations}
+Spurious differences for non-DE genes may also be present with other transformations.
+We considered the square root, which provides good variance stabilization for Poisson-distributed counts;
+and the variance stabilizing transformation (VST) for negative binomial (NB)-distributed counts from \emph{DESeq2} \cite{love2014moderated}.
+In simulations of non-DE genes, we observed large differences in the mean of transformed values with both transformations (Figure~\ref{fig:alttransform}).
+This indicates that variance stabilization does not protect against spurious differences in the mean.
+Perhaps no single transformation exists that 
+(i) yields transformed values that are easily interpretable,
+(ii) provides complete variance stabilization, and
+(iii) avoids spurious differences in the mean of transformed values.
+
+\begin{figure}
+\centering
+\begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=2]{../scripts/pics/alternative_pois.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/alternative_pois.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=3]{../scripts/pics/alternative_pois.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=2]{../scripts/pics/alternative_nb.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/alternative_nb.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=3]{../scripts/pics/alternative_nb.pdf}
+    \caption{}
+\end{subfigure}
+\caption{Distribution of mean expression values for Poisson-distributed counts (a, b, c) or NB-distributed counts (d, e, f) after applying a variety of transformations.
+Simulated count data was generated for 10000 genes in 500 cells, with the mean count set to 1 for half of the cells (smaller group) and 100 for the other half (larger group).
+The dispersion was set to 1 for the NB simulations.
+Size factors were calculated by scaling the library sizes to a mean of unity across cells.
+Transformations were applied to the size factor-scaled counts, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
+Boxplots represent the distribution of mean transformed values across genes, with outlier genes shown as separate dots.
+}
+\label{fig:alttransform}
 \end{figure}
 
 \section{Computing a suitable pseudo-count}
