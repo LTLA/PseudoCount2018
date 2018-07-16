@@ -276,6 +276,30 @@ A simple strategy is to set $s_1$ to the smallest size factor and $s_2$ to the l
 (or robust equivalents thereof, e.g., the 5\textsuperscript{th} and 95\textsuperscript{th} percentiles).
 This ensures that the difference in log-values for a non-DE gene will be capped below the upper bound for pairwise comparisons between any pair of cells.
 
+\section{Examining effects on power}
+A larger $c$ will shrink the differences in the log-transformed values towards zero for all genes.
+This mitigates the effect of spurious differences in non-DE genes but will also compromise interpretation of log-fold changes for genuine DE genes.
+A near-zero difference between subpopulations for low-abundance genes cannot be treated as an accurate estimate of the true log-fold change. 
+This is obviously problematic if important changes in expression of low-abundance genes are overlooked due to the small magnitude of the difference in log-values.
+Greater shrinkage also means that distance calculations are driven by moderate- to high-abundance genes.
+This may affect resolution of biological signal that is only present in low-abundance genes.
+That said, detection power for DE genes in a formal hypothesis testing framework is mostly unaffected (Figure~\ref{fig:power}).
+This is because the larger $c$ also reduces the variance in the log-transformed values, 
+thus compensating for the decrease in the mean difference.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{../scripts/pics/power.pdf}
+\end{center}
+\caption{Welch $t$-statistics as a function of the DE fold change, for log-transformed data with a variety of added pseudo-counts.
+We considered an experimental design with 1000 cells in each group.
+Counts were sampled from a NB distribution with a mean of $\mu$ in one group and $f\mu$ in the other group for some fold change $f$.
+Log$_2$-transformed values were computed with a range of pseudo-counts, and a Welch $t$-statistic was computed for the difference in transformed values between groups.
+All size factors were set to unity during the transformation, to reflect the fact that $f$ represents geniune DE. 
+}
+\label{fig:power}.
+\end{figure}
+
 \bibliography{ref}
 \bibliographystyle{unsrt}
 
