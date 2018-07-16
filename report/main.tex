@@ -270,13 +270,18 @@ Results are not shown for scenarios where $s_1=s_2$ as no difference in log-expr
 \label{fig:cappederr}
 \end{figure}
 
-In practice, we need to compare many cells to one another instead of just two specific cells.
-The exact choices of $s_1$ and $s_2$ are not obvious when considering a single pseudo-count for multiple cells.
+In practice, downstream procedures such as clustering will compare many cells to one another instead of just two specific cells.
+The exact choices of $s_1$ and $s_2$ are not obvious when considering the calculation of a single pseudo-count for the entire data set.
 A simple strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
 (or robust equivalents thereof, e.g., the 5\textsuperscript{th} and 95\textsuperscript{th} percentiles).
-This ensures that the difference in log-values for a non-DE gene will be capped below the upper bound for pairwise comparisons between any pair of cells.
+This ensures that the difference in log-values for a non-DE gene does not exceed the theoretical upper bound for any pair of cells.
+We thus define our empirical pseudo-count as
+\[
+\hat c = \max\{1, |s_{min}^{-1} - s_{max}^{-1}|\} \;,
+\]
+which ensures that the pseudo-count is at least unity when all size factors are equal.
 
-\section{Examining effects on power}
+\section{Consequences of increasing the pseudo-count}
 A larger $c$ will shrink the differences in the log-transformed values towards zero for all genes.
 This mitigates the effect of spurious differences in non-DE genes but will also compromise interpretation of log-fold changes for genuine DE genes.
 A near-zero difference between subpopulations for low-abundance genes cannot be treated as an accurate estimate of the true log-fold change. 
@@ -297,8 +302,9 @@ Counts were sampled from a NB distribution with a mean of $\mu$ in one group and
 Log$_2$-transformed values were computed with a range of pseudo-counts, and a Welch $t$-statistic was computed for the difference in transformed values between groups.
 All size factors were set to unity during the transformation, to reflect the fact that $f$ represents geniune DE. 
 }
-\label{fig:power}.
+\label{fig:power}
 \end{figure}
+
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
