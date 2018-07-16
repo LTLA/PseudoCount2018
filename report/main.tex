@@ -1,0 +1,141 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage[top=0.85in,left=2.75in,footskip=0.75in,marginparwidth=2in]{geometry}
+
+% use Unicode characters - try changing the option if you run into troubles with special characters (e.g. umlauts)
+\usepackage[utf8]{inputenc}
+
+% clean citations
+\usepackage{cite}
+
+% hyperref makes references clicky. use \url{www.example.com} or \href{www.example.com}{description} to add a clicky url
+\usepackage{nameref,hyperref}
+
+% line numbers
+\usepackage[right]{lineno}
+
+% improves typesetting in LaTeX
+\usepackage{microtype}
+\DisableLigatures[f]{encoding = *, family = * }
+
+% text layout - change as needed
+\raggedright
+\setlength{\parindent}{0.5cm}
+\textwidth 5.25in 
+\textheight 8.75in
+
+% Remove % for double line spacing
+%\usepackage{setspace} 
+%\doublespacing
+
+% use adjustwidth environment to exceed text width (see examples in text)
+\usepackage{changepage}
+
+% adjust caption style
+\usepackage[aboveskip=1pt,labelfont=bf,labelsep=period,singlelinecheck=off]{caption}
+
+% remove brackets from references
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+% headrule, footrule and page numbers
+\usepackage{lastpage,fancyhdr,graphicx}
+\usepackage{epstopdf}
+\pagestyle{myheadings}
+\pagestyle{fancy}
+\fancyhf{}
+\rfoot{\thepage/\pageref{LastPage}}
+\renewcommand{\footrule}{\hrule height 2pt \vspace{2mm}}
+\fancyheadoffset[L]{2.25in}
+\fancyfootoffset[L]{2.25in}
+
+% use \textcolor{color}{text} for colored text (e.g. highlight to-do areas)
+\usepackage{color}
+
+% define custom colors (this one is for figure captions)
+\definecolor{Gray}{gray}{.25}
+
+% this is required to include graphics
+\usepackage{graphicx}
+
+% use if you want to put caption to the side of the figure - see example in text
+\usepackage{sidecap}
+
+% use for have text wrap around figures
+\usepackage{wrapfig}
+\usepackage[pscoord]{eso-pic}
+\usepackage[fulladjust]{marginnote}
+\reversemarginpar
+
+% Adding multirow.
+\usepackage{multirow}
+
+% Other required things:
+\usepackage{color}
+\usepackage{subcaption}
+\captionsetup[subfigure]{justification=centering}
+\usepackage{amsmath}
+
+% document begins here
+\begin{document}
+\vspace*{0.35in}
+
+% title goes here:
+\begin{flushleft}
+{\Large
+    \textbf\newline{Using an appropriate pseudo-count for log-transformation of normalized single-cell RNA sequencing data}
+}
+\newline
+
+% authors go here:
+%\\
+Aaron Lun\textsuperscript{1,*}
+\\
+\bigskip
+\bf{1} Cancer Research UK Cambridge Institute, University of Cambridge, Li Ka Shing Centre, Robinson Way, Cambridge CB2 0RE, United Kingdom \\
+\bigskip
+
+\end{flushleft}
+
+\section{Computing a suitable pseudo-count}
+
+\subsection{Derivation}
+
+Let $X_i$ denote a random variable for a non-negative count of a gene $g$ in cell $i$.
+The log-transformed normalized expression value is defined as 
+\[
+Z_i = \log(X_i / s_i + c) \;,
+\]
+where $s_i$ is the size factor for $i$ and $c$ is the pseudo-count.
+(We will omit the gene indexing for clarity, as we are only referring to a single gene throughout.)
+The second-order Taylor series approximation for the expectation of $Z_i$ is
+\[
+E(Z_i) = \log[E(X_i/s_i) + c] - \frac{\mbox{var}(X_i)s_i^{-2}}{2[E(X_i/s_i) + c]^2} \;.
+\]
+If we further assume that $X_i$ follows a negative binomial (NB) distribution with mean $s_i\mu$ and dispersion $\varphi$, we obtain
+\[
+E(Z_i) =  \log[\mu + c] - \frac{\mu s_i^{-1} + \varphi \mu^2}{2(\mu + c)^2} \;.
+\]
+
+Now, consider two cells $i=1$ and $i=2$ that differ only in their $s_i$.
+The difference in $E(Z_i)$ represents the expected log-fold change between cells, which is
+\begin{align*}
+\Delta_{12} 
+&= \frac{\mu s_1^{-1} + \varphi \mu^2}{2(\mu + c)^2} - \frac{\mu s_2^{-1} + \varphi \mu^2}{2(\mu + c)^2} \\ 
+&= \frac{\mu (s_1^{-1} - s_2^{-1})}{2(\mu + c)^2} \;.
+\end{align*}
+$\Delta_{12}$ is a spurious difference as the log-fold change between cells should be zero after normalization.
+This error in the log-fold change is maximized when $\mu = c$, yielding 
+\[
+\tilde\Delta_{12} = \frac{(s_1^{-1} - s_2^{-1})}{8c} \;.
+\]
+Thus, we can cap the maximum error $\tilde\Delta_{12}$ regardless of the values of $s_i$ by defining
+\[
+    c \propto |s_1^{-1} - s_2^{-1}| \;.
+\]
+
+
+\bibliography{ref}
+\bibliographystyle{unsrt}
+
+\end{document}
