@@ -340,6 +340,13 @@ However, if there is a correlation between the identified biological structures 
 (A more refined choice of $c$ can be made for comparisons between specific subpopulations, but we will use the most general approach here.)
 This ensures that the detected clusters or trajectories are not driven by the artificial differences from the log-transformation.
 
+It is worth stressing that use of $\hat c$ only caps the spurious difference on a per-gene basis.
+When computing distances between expression profiles, small gene-wise errors can add up to a large systematic error in the distance.
+This means that artificial structures (Figure~\ref{fig:structures}) can still manifest.
+However, the aim of using a larger pseudo-count is not to eliminate such structures, which are an unavoidable consequence of the transformation.
+Rather, our intention is to suppress these artificial differences so that biological heterogeneity dominates the results of an exploratory data analysis.
+This includes both structured heterogeneity (e.g., different cell types, differentiation trajectories) as well as random biological noise (e.g., transcriptional bursting) that can mask the transformation-induced artifacts, thus preventing misleading conclusions.
+
 \bibliography{ref}
 \bibliographystyle{unsrt}
 
