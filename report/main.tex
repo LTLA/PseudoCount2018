@@ -97,6 +97,24 @@ Aaron Lun\textsuperscript{1,*}
 
 \end{flushleft}
 
+\section{Background}
+Log-transformed expression values are widely used in analyses of single-cell RNA sequencing (scRNA-seq) and other transcriptomic data.
+This is driven the simplicity of the log-transformation and its moderate variance stabilizing capabilities on many types of non-negative data.
+In particular, the log-transformation reduces the impact of stochastic fluctuations in the counts for high-abundance genes.
+This would otherwise result in large differences in the counts that are mostly uninteresting as the fold changes are small.
+Differences between log-values are also approximately interpretable as log-fold changes between cells, which are often more relevant than differences in the counts.
+This is useful for ensuring that the relative rather than absolute differences in the counts are used in distance-based procedures like clustering or trajectory construction.
+
+Despite its popularity, the log-transformation has a number of problems such as incomplete variance stabilization and arbitrariness in the choice of pseudo-count.
+One issue of particular interest is that the mean of the log-counts is not generally the same as the log-mean count \cite{hicks2017missing}.
+This is problematic in (sc)RNA-seq contexts where the log-transformation is applied to normalized expression data.
+Here, normalization is performed to remove inter-sample biases on the count scale \cite{robinson2010scaling,lun2016pooling}.
+For genes that are not differentially expressed (DE), the expectation of the normalized expression is the same between samples.
+However, the expectation of the log-normalized values may not be the same, resulting in spurious differences between samples/cells in the log-scale.
+
+In this report, we describe the nature and impact of the discrepancy between log-mean and mean-log values.
+We also show how the added pseudo-count can be increased to cap the discrepancy at the cost of reducing interpretability.
+
 \section{Computing a suitable pseudo-count}
 
 \subsection{Derivation}
