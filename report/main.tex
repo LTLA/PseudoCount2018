@@ -115,9 +115,7 @@ However, the expectation of the log-normalized values may not be the same, resul
 In this report, we describe the nature and impact of the discrepancy between log-mean and mean-log values.
 We also show how the added pseudo-count can be increased to cap the discrepancy at the cost of reducing interpretability.
 
-\section{Computing a suitable pseudo-count}
-
-\subsection{Derivation}
+\section{Quantifying the discrepancy}
 
 Let $X_i$ denote a random variable for a non-negative count of a gene $g$ in cell $i$.
 The log-transformed normalized expression value is defined as 
@@ -128,8 +126,61 @@ where $s_i$ is the size factor for $i$ and $c$ is the pseudo-count.
 (We will omit the gene indexing for clarity, as we are only referring to a single gene throughout.)
 The second-order Taylor series approximation for the expectation of $Z_i$ is
 \[
-E(Z_i) = \log[E(X_i/s_i) + c] - \frac{\mbox{var}(X_i)s_i^{-2}}{2[E(X_i/s_i) + c]^2} \;.
+E(Z_i) \approx \log[E(X_i/s_i) + c] - \frac{\mbox{var}(X_i)s_i^{-2}}{2[E(X_i/s_i) + c]^2} \;.
 \]
+The second term represents the discrepancy between the mean-log and the log-mean.
+
+Now, consider two cells $i=1$ and $i=2$ that differ only in their $s_i$.
+Assume that $g$ is non-DE between these two cells, such that $E(X_i/s_i)=\mu$ for both.
+This means that
+\[
+E(Z_i) \approx \log(\mu + c) - \frac{\mbox{var}(X_i)s_i^{-2}}{2(\mu + c)^2} \;.
+\]
+The difference in $E(Z_i)$ between these two cells is interpreted as the expected log-fold change in the normalized counts, and can be written as
+\[
+\Delta_{12} \approx \frac{\mbox{var}(X_1)s_1^{-2} -  \mbox{var}(X_2)s_2^{-2}}{2(\mu + c)^2} \;.
+\]
+Any non-zero $\Delta_{12}$ is a spurious difference as the log-fold change between cells should be zero after normalization.
+In general, $\Delta_{12}\neq 0$ due to differences in the size factors and subsequently variances at different points in the mean-variance relationship.
+
+We performed simulations to quantify this spurious difference across a variety of scenarios (Figure~\ref{fig:maxeffect}).
+The difference was most prominent when the size factors were different and either or both of them were less than unity.
+This is consistent with the above expression for $\Delta_{12}$, which increases in magnitude with smaller $s_i$.
+We note that 10-fold difference in the size factors across cells is not unusual in real scRNA-seq data \cite{lun2016pooling} due to the variability of capture efficiency and amplification.
+However, even in this situation, we can obtain a log-difference of 1.
+This corresponds to an artificial 2-fold change in expression, which can result in misleading biological conclusions.
+
+\begin{figure}[btp]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/max_effect.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=2]{../scripts/pics/max_effect.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=3]{../scripts/pics/max_effect.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=4]{../scripts/pics/max_effect.pdf}
+    \caption{}
+\end{subfigure}
+\caption{Maximum difference in the log-expression values for non-DE simulated data.
+Each difference was computed between the average $Z_i$ of 10000 counts for $i=1$ and 2.
+Counts were sampled from a negative binomial distribution with mean $\mu s_i$ and the specified dispersion $\varphi$.
+For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu \in [10^{-3}, 10^3]$.
+Maximum differences are only shown for scenarios where $s_1 \ge s_2$, for simplicity.
+}
+\label{fig:maxeffect}
+\end{figure}
+
+\section{Computing a suitable pseudo-count}
+
+\subsection{Derivation}
+
 If we further assume that $X_i$ follows a negative binomial (NB) distribution with mean $s_i\mu$ and dispersion $\varphi$, we obtain
 \[
 E(Z_i) =  \log[\mu + c] - \frac{\mu s_i^{-1} + \varphi \mu^2}{2(\mu + c)^2} \;.
