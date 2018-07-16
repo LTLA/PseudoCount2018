@@ -236,7 +236,7 @@ This spurious difference in the log-expression values is maximized when $\mu = c
 \[
 \tilde\Delta_{12} = \frac{(s_1^{-1} - s_2^{-1})}{8c} \;.
 \]
-Thus, we can cap the maximum error $\tilde\Delta_{12}$ regardless of the values of $s_i$ by defining
+Thus, we can cap the maximum error $\tilde\Delta_{12}$ regardless of the values of $s_i$ by requiring 
 \[
     c \propto |s_1^{-1} - s_2^{-1}| \;.
 \]
@@ -261,7 +261,7 @@ We observe this in a range of simulation scenarios (Figure~\ref{fig:cappederr}),
     \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=4]{../scripts/pics/error_bound.pdf}
     \caption{}
 \end{subfigure}
-\caption{Maximum difference in the log-expression values for non-DE simulated data after setting $c = |s_1^{-1} - s_2^{-1}|$.
+\caption{Maximum difference in the log-expression values for non-DE simulated data after setting $c$ to $|s_1^{-1} - s_2^{-1}|$.
 Each difference was computed between the average $Z_i$ of 10000 counts for $i=1$ and 2.
 Counts were sampled from a negative binomial distribution with mean $\mu s_i$ and the specified dispersion $\varphi$.
 For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu \in [10^{-3}, 10^3]$.
@@ -272,7 +272,7 @@ Results are not shown for scenarios where $s_1=s_2$ as no difference in log-expr
 
 In practice, downstream procedures such as clustering will compare many cells to one another instead of just two specific cells.
 The exact choices of $s_1$ and $s_2$ are not obvious when considering the calculation of a single pseudo-count for the entire data set.
-A simple strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
+A general strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
 (or robust equivalents thereof, e.g., the 5\textsuperscript{th} and 95\textsuperscript{th} percentiles).
 This ensures that the difference in log-values for a non-DE gene does not exceed the theoretical upper bound for any pair of cells.
 We thus define our empirical pseudo-count as
@@ -305,6 +305,13 @@ All size factors were set to unity during the transformation, to reflect the fac
 \label{fig:power}
 \end{figure}
 
+We recommend the following analysis strategy to mitigate the disadvantages of using a larger pseudo-count.
+Initial exploratory data analyses should be performed with the default pseudo-count, e.g., $c=1$.
+This avoids excessive shrinkage of biological differences for low-abundance genes, especially if such shrinkage is unnecessary, 
+e.g., size factors do not differ systematically between clusters or across trajectories.
+However, if there is a correlation between the identified biological structures and the size factors, the exploratory analysis should be repeated with a larger pseudo-count of $\hat c$. 
+(A more refined choice of $c$ can be made for comparisons between specific subpopulations, but we will use the most general approach here.)
+This ensures that the detected clusters or trajectories are not driven by the artificial differences from the log-transformation.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
