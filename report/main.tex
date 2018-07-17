@@ -339,8 +339,9 @@ which ensures that the pseudo-count is at least unity when all size factors are 
 The proportionality constant for $c$ is also set to unity, which provides a compromise between restricting $\tilde\Delta_{12}$ and keeping the pseudo-count as small as possible.
 
 \section{Consequences of increasing the pseudo-count}
-A larger pseudo-count will shrink the differences in the log-transformed values towards zero for all genes.
-This mitigates the effect of spurious differences in non-DE genes but will also compromise interpretation of log-fold changes for genuine DE genes.
+The strength of our definition of $\hat c$ is that it can adaptively increase according to the observed variation in the size factors.
+However, this is not without consequences.
+A larger pseudo-count will mitigate the effect of spurious differences in non-DE genes but will also compromise interpretation of log-fold changes for genuine DE genes.
 A near-zero difference between subpopulations for low-abundance genes cannot be treated as an accurate estimate of the true log-fold change. 
 This is obviously problematic if important changes in expression of low-abundance genes are overlooked due to the small magnitude of the difference in log-values.
 Greater shrinkage also means that distance calculations are driven by moderate- to high-abundance genes.
@@ -377,6 +378,24 @@ This means that artificial structures (Figure~\ref{fig:structures}) can still ma
 However, the aim of using a larger pseudo-count is not to eliminate such structures, which are an unavoidable consequence of the transformation.
 Rather, our intention is to suppress these artificial differences so that biological heterogeneity dominates the results of an exploratory data analysis.
 This includes both structured heterogeneity (e.g., different cell types, differentiation trajectories) as well as random biological noise (e.g., transcriptional bursting) that can mask the transformation-induced artifacts, thus preventing misleading conclusions.
+
+\section{Discussion}
+It is worth speculating on some real situations in which the log-transformation is most likely to cause distortions.
+Artifacts are most pronounced when the counts are low and there is large variation in the size factors across cells.
+Both of these are often observed in data from droplet-based scRNA-seq protocols, as sequencing coverage is shared across a large number of libraries and reaction conditions are not precisely controlled for each droplet.
+We would also expect the size factors within each experiment to vary across a continuum, yielding artificial trajectories (Figure~\ref{fig:structures}b) rather than distinct clusters (Figure~\ref{fig:structures}a).
+This suggests that caution is required when interpreting trajectories that are correlated with the size factors, especially in low-coverage droplet-based data.
+
+In the context of scRNA-seq analysis workflows, additional procedures can be used to reduce transformation-induced artifacts.
+For example, quality control is typically performed to remove cells with small library sizes \cite{ilicic2016classification,lun2016stepbystep}.
+This reduces the variation in the size factors and the potential for artificial differences upon log-transformation.
+In addition, low-abundance genes can be filtered out, which provides further protection as the mean values at low counts are most distorted by log-transformation.
+However, we note that the use of a larger pseudo-count provides a more nuanced approach to reducing the influence of low-abundance genes.
+This ensures that strong biological signal in those genes is not completely discarded for downstream applications.
+
+Data transformations are powerful tools for exploratory analyses of scRNA-seq data.
+However, each transformation has the potential to introduce artificial differences, as we have shown for the log-transformation.
+Our recommendation is to increase the pseudo-count in cases where such artifacts may drive misleading conclusions.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
