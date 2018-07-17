@@ -203,8 +203,27 @@ Each point represents a cell coloured according to the value of $s_i$.
 \label{fig:structures}
 \end{figure}
 
-\section{Exploring alternative transformations}
-Spurious differences for non-DE genes may also be present with other transformations.
+\section{Exploring possible remedies}
+The obvious solution is to not perform any transformation and to model the counts directly in all analyses.
+For example, methods like \textit{edgeR} \cite{robinson2010edgeR} can be used for DE analyses;
+methods like \textit{BASiCS} \cite{vallejos2016beyond} for detecting differentially or highly variable genes;
+and methods like \textit{zinbwave} \cite{risso2018general} for factor analysis.
+This accounts for the mean-variance relationship while avoiding any distortion of the expected expression.
+However, most existing methods for scRNA-seq data analysis (e.g., clustering, dimensionality reduction) do not use count-based models.
+This is attributable to the difficulties in estimating model parameters, often separately for each gene and/or each cell,
+compared to algorithms that only need distances between cells as input.
+Thus, it is still desirable to obtain transformed data for compatibility with existing analysis methods.
+
+Another possible solution is to remove discrepancies empirically after transformation.
+This is done in various types of batch correction \cite{ritchie2015limma,haghverdi2018batch} where systematic differences in transformed values between batches are eliminated.
+It is, however, not straightforward to achieve in general as the magnitude of the discrepancy depends on the mean (Equation~\ref{eqn:spuriousdiff}).
+An empirical correction would require an approach similar to that used in \textit{SCnorm} \cite{bacher2017scnorm}.
+If we assume that most genes at any given abundance interval are mostly non-DE across all cells, any systematic trends in the transformed values with respect to $s_i$ for the genes in that interval must be artificial and should be removed.
+This assumption is considerably stronger than that used in scaling normalization (which only requires a non-DE majority across all genes),
+and cannot handle enrichment of DE genes, e.g., at high abundances due to strong upregulation.
+It is also difficult to fit an accurate and robust trend to discrete transformed values for low-abundance genes.
+
+Finally, we explore the use of other transformations with different statistical properties.
 We considered the square root, which provides good variance stabilization for Poisson-distributed counts;
 and the variance stabilizing transformation (VST) for negative binomial (NB)-distributed counts from \emph{DESeq2} \cite{love2014moderated}.
 In simulations of non-DE genes, we observed large differences in the mean of transformed values with both transformations (Figure~\ref{fig:alttransform}).
