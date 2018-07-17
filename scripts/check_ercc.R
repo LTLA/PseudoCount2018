@@ -34,20 +34,14 @@ all.ref <- log2((rowMeans(right)+1)/(rowMeans(left)+1))
 big.pseudo <- abs(1/median(size.facs[lower]) - 1/median(size.facs[upper]))
 all.big <- rowMeans(log2(right+big.pseudo)) - rowMeans(log2(left+big.pseudo))
 
+ave.count <- rowMeans(normed)
+
 # Creating a plot.
-all.extra <- all.lfcs - all.ref
-all.extra.big <- all.big - all.ref
-combined <- c(all.extra, all.extra.big)
-breaks <- seq(min(combined), max(combined), length.out=20)
+ylim <- range(c(all.big, all.ref, all.lfcs))
 
 pdf("pics/ercc.pdf")
-hist(all.extra, xlab="Error", breaks=breaks, col="grey80", main="Error with pseudo-count = 1")
-hist(all.extra.big, xlab="Error", breaks=breaks, col="grey80", main="Error with large pseudo-count")
-
-all.lfcs <- c(all.ref, all.lfcs, all.big)
-fc.breaks <- seq(min(all.lfcs), max(all.lfcs), length.out=20)
-hist(all.ref, xlab="Difference in log-means", breaks=fc.breaks, col="grey80", main="")
-hist(all.lfcs, xlab="Difference in mean-logs (+ 1)", breaks=fc.breaks, col="grey80", main="")
-hist(all.big, xlab="Difference in mean-logs (+ large)", breaks=fc.breaks, col="grey80", main="")
+plot(ave.count, all.lfcs, xlab="Average count", log="x", ylab="Difference in log-values", pch=16, ylim=ylim)
+plot(ave.count, all.ref, xlab="Average count", log="x", ylab="Log-fold change in mean counts", pch=16, ylim=ylim)
+plot(ave.count, all.big, xlab="Average count", log="x", ylab="Difference in log-values", pch=16, ylim=ylim)
 dev.off()
 

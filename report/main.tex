@@ -203,6 +203,31 @@ Each point represents a cell coloured according to the value of $s_i$.
 \label{fig:structures}
 \end{figure}
 
+We verified the existence of this effect in real scRNA-seq data from the 10X Genomics platform \cite{zheng2017massively}.
+We used the publicly available ERCC data set (\url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/ercc}) in which gel emulsion beads containing ERCC spike-in transcripts were captured into droplets.
+The composition of the ERCC transcripts should be constant in all droplets, so there should not be any difference in the expression profiles after library size normalization.
+However, we observed a systematic non-zero difference in the mean log-expression values when comparing the smallest and largest droplets (Figure~\ref{fig:ercc}a).
+This is fully attributable to the log-transformation, as no such difference is present in the log-fold change between the mean counts after normalization (Figure~\ref{fig:ercc}b).
+
+\begin{figure}
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/ercc.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=2]{../scripts/pics/ercc.pdf}
+    \caption{}
+\end{subfigure}
+\caption{Effect of log-transformation on the comparison between large and small droplets in the ERCC 10X Genomics data set.
+(a) Differences in the mean $Z_i$ between the top 20\% of libraries with the largest size factors and the bottom 20\%.
+Size factors were calculated by scaling the library sizes to a mean of unity across cells, and the pseudo-count was set to unity.
+Only libraries with total counts above 100 were considered.
+Each point represents a single ERCC spike-in transcript.
+(b) Log-fold change in the mean normalized count between the same groups of libraries for each ERCC transcript.}
+\label{fig:ercc}
+\end{figure}
+
 \section{Exploring possible remedies}
 The obvious solution is to not perform any transformation and to model the counts directly in all analyses.
 For example, methods like \textit{edgeR} \cite{robinson2010edgeR} can be used for DE analyses;
