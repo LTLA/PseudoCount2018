@@ -315,6 +315,17 @@ Results are not shown for scenarios where $s_1=s_2$ as no difference in log-expr
 \label{fig:cappederr}
 \end{figure}
 
+In theory, we could minimize $\tilde\Delta_{12}$ by setting $c$ to some arbitrarily large value.
+However, as $c \to \infty$, the log-transformation approaches a linear transformation, i.e.,
+\[
+    Z_i \approx \log(c) + \frac{X_i}{s_i c} \;.
+\]
+Thus, using an arbitrarily large pseudo-count defeats the intended purpose of the log-transformation. 
+No variance stabilization is achieved and differences in the transformed values cannot be interpreted as log-fold changes. 
+Instead, our aim must be to choose the smallest pseudo-count that restricts $\tilde\Delta_{12}$ to an acceptable level.
+To this end, we would also expect the chosen $c$ to be comparable to the magnitude of $E(X_i/s_i)$.
+Otherwise, if $c$ is much larger, we lose the benefits of the log-transformation.
+
 In practice, downstream procedures such as clustering will compare many cells to one another instead of just two specific cells.
 The exact choices of $s_1$ and $s_2$ are not obvious when considering the calculation of a single pseudo-count for the entire data set.
 A general strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
@@ -325,6 +336,7 @@ We thus define our empirical pseudo-count as
 \hat c = \max\{1, |s_{min}^{-1} - s_{max}^{-1}|\} \;,
 \]
 which ensures that the pseudo-count is at least unity when all size factors are equal.
+The proportionality constant for $c$ is also set to unity, which provides a compromise between restricting $\tilde\Delta_{12}$ and keeping the pseudo-count as small as possible.
 
 \section{Consequences of increasing the pseudo-count}
 A larger pseudo-count will shrink the differences in the log-transformed values towards zero for all genes.
