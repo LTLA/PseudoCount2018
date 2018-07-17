@@ -310,18 +310,18 @@ Boxplots represent the distribution of mean transformed values across genes, wit
 \end{figure}
 
 \section{Choosing a larger pseudo-count}
-We assume that $X_i$ follows a negative binomial (NB) distribution with mean $s_i\mu$ and dispersion $\varphi$.
-This means that we can simplify the expression for $\Delta_{12}$ to
+We assume that $X_{ig}$ follows a negative binomial (NB) distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
+This means that we can simplify the expression for $\Delta_{12g}$ to
 \begin{align*}
 \Delta_{12} 
-&\approx \frac{\mu s_1^{-1} + \varphi \mu^2}{2(\mu + c)^2} - \frac{\mu s_2^{-1} + \varphi \mu^2}{2(\mu + c)^2} \\ 
-&= \frac{\mu (s_1^{-1} - s_2^{-1})}{2(\mu + c)^2} \;.
+&\approx \frac{\mu_g s_1^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} - \frac{\mu_g s_2^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} \\ 
+&= \frac{\mu_g (s_1^{-1} - s_2^{-1})}{2(\mu_g + c)^2} \;.
 \end{align*}
-This spurious difference in the log-expression values is maximized when $\mu = c$, yielding 
+This spurious difference in the log-expression values is maximized when $\mu_g = c$, yielding 
 \[
-\tilde\Delta_{12} = \frac{(s_1^{-1} - s_2^{-1})}{8c} \;.
+\tilde\Delta_{12g} = \frac{(s_1^{-1} - s_2^{-1})}{8c} \;.
 \]
-Thus, we can cap the maximum error $\tilde\Delta_{12}$ regardless of the values of $s_i$ by requiring 
+Thus, we can cap the maximum error $\tilde\Delta_{12g}$ regardless of the values of $s_i$ by requiring 
 \[
     c \propto |s_1^{-1} - s_2^{-1}| \;.
 \]
@@ -355,15 +355,15 @@ Results are not shown for scenarios where $s_1=s_2$ as no difference in log-expr
 \label{fig:cappederr}
 \end{figure}
 
-In theory, we could minimize $\tilde\Delta_{12}$ by setting $c$ to some arbitrarily large value.
+In theory, we could minimize $\tilde\Delta_{12g}$ by setting $c$ to some arbitrarily large value.
 However, as $c \to \infty$, the log-transformation approaches a linear transformation, i.e.,
 \[
-    Z_i \approx \log(c) + \frac{X_i}{s_i c} \;.
+    Z_{ig} \approx \log(c) + \frac{X_{ig}}{s_i c} \;.
 \]
 Thus, using an arbitrarily large pseudo-count defeats the intended purpose of the log-transformation. 
-No variance stabilization is achieved and differences in the transformed values cannot be interpreted as log-fold changes. 
-Instead, our aim must be to choose the smallest pseudo-count that restricts $\tilde\Delta_{12}$ to an acceptable level.
-To this end, we would also expect the chosen $c$ to be comparable to the magnitude of $E(X_i/s_i)$.
+No variance stabilization is achieved and differences in the transformed values cannot be used as proxies for log-fold changes. 
+Instead, our aim must be to choose the smallest pseudo-count that restricts $\tilde\Delta_{12g}$ to an acceptable level.
+To this end, we would also expect the chosen $c$ to be comparable to the magnitude of $E(X_{ig}/s_i)$.
 Otherwise, if $c$ is much larger, we lose the benefits of the log-transformation.
 
 In practice, downstream procedures such as clustering will compare many cells to one another instead of just two specific cells.
@@ -376,7 +376,7 @@ We thus define our empirical pseudo-count as
 \hat c = \max\{1, |s_{min}^{-1} - s_{max}^{-1}|\} \;,
 \]
 which ensures that the pseudo-count is at least unity when all size factors are equal.
-The proportionality constant for $c$ is also set to unity, which provides a compromise between restricting $\tilde\Delta_{12}$ and keeping the pseudo-count as small as possible.
+The proportionality constant for $c$ is also set to unity, which provides a compromise between restricting $\tilde\Delta_{12g}$ and keeping the pseudo-count as small as possible.
 
 \section{Consequences of increasing the pseudo-count}
 The strength of our definition of $\hat c$ is that it can adaptively increase according to the observed variation in the size factors.
@@ -417,7 +417,7 @@ When computing distances between expression profiles, small gene-wise errors can
 This means that artificial structures (Figure~\ref{fig:structures}) can still manifest.
 However, the aim of using a larger pseudo-count is not to eliminate such structures, which are an unavoidable consequence of the transformation.
 Rather, our intention is to suppress these artificial differences so that biological heterogeneity dominates the results of an exploratory data analysis.
-This includes both structured heterogeneity (e.g., different cell types, differentiation trajectories) as well as random biological noise (e.g., transcriptional bursting) that can mask the transformation-induced artifacts, thus preventing misleading conclusions.
+This includes both structured heterogeneity (e.g., different cell types, differentiation trajectories) as well as random biological noise (e.g., transcriptional bursting) that can mask the transformation-induced artifacts and prevent misleading conclusions.
 
 \section{Discussion}
 It is worth speculating on some real situations in which the log-transformation is most likely to cause distortions.
@@ -429,13 +429,13 @@ This suggests that caution is required when interpreting trajectories that are c
 In the context of scRNA-seq analysis workflows, additional procedures can be used to reduce transformation-induced artifacts.
 For example, quality control is typically performed to remove cells with small library sizes \cite{ilicic2016classification,lun2016stepbystep}.
 This reduces the variation in the size factors and the potential for artificial differences upon log-transformation.
-In addition, low-abundance genes can be filtered out, which provides further protection as the mean values at low counts are most distorted by log-transformation.
-However, we note that the use of a larger pseudo-count provides a more nuanced approach to reducing the influence of low-abundance genes.
-This ensures that strong biological signal in those genes is not completely discarded for downstream applications.
+In addition, low-abundance genes can be filtered out, which provides further protection as genes with low counts are most affected by the log-transformation.
+We note that the use of a larger pseudo-count will also reduce the influence of low-abundance genes.
+This is a more nuanced approach than filtering, as it ensures that strong biological signal in low-abundance genes is not completely discarded for downstream applications.
 
 Data transformations are powerful tools for exploratory analyses of scRNA-seq data.
-However, each transformation has the potential to introduce artificial differences, as we have shown for the log-transformation.
-Our recommendation is to increase the pseudo-count in cases where such artifacts may drive misleading conclusions.
+However, they also have the potential to introduce artificial differences, as we have shown for the log-transformation.
+Our recommendation is to increase the pseudo-count in cases where size factor variation may be responsible for spurious structure in the data.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
