@@ -100,7 +100,7 @@ Aaron Lun\textsuperscript{1,*}
 
 \section{Background}
 Log-transformed expression values are widely used in analyses of single-cell RNA sequencing (scRNA-seq) and other transcriptomic data.
-This is driven the simplicity of the log-transformation and its moderate variance stabilizing capabilities on many types of non-negative data.
+This is driven by the simplicity of the log-transformation and its variance stabilizing behaviour on many types of non-negative data.
 In particular, the log-transformation reduces the impact of stochastic fluctuations in the counts for high-abundance genes.
 This would otherwise result in large differences in the counts that are mostly uninteresting as the fold changes are small.
 Differences between log-values are also approximately interpretable as log-fold changes between cells, which are often more relevant than differences in the counts.
@@ -111,44 +111,49 @@ One issue of particular interest is that the mean of the log-counts is not gener
 This is problematic in (sc)RNA-seq contexts where the log-transformation is applied to normalized expression data.
 Here, normalization is performed to remove inter-sample biases on the count scale \cite{robinson2010scaling,lun2016pooling}.
 For genes that are not differentially expressed (DE), the expectation of the normalized expression is the same between samples.
-However, the expectation of the log-normalized values may not be the same, resulting in spurious differences between samples/cells in the log-scale.
+However, the expectation of the log-normalized values may not be the same, resulting in spurious differences between samples/cells on the log-scale.
 
 In this report, we describe the nature and impact of the discrepancy between log-mean and mean-log values.
 We also show how the added pseudo-count can be increased to cap the discrepancy at the cost of reducing interpretability.
 
 \section{Quantifying the discrepancy}
-Let $X_i$ denote a random variable for a non-negative count of a gene $g$ in cell $i$.
-The log-transformed normalized expression value is defined as 
+Let $X_{ig}$ denote a random variable for a non-negative count of a gene $g$ in cell $i$.
+The size factor $s_i$ represents the scaling bias in $i$, which is removed by computing the normalized expression value $X_{ig}/s_i$.
+The log-transformed normalized expression is defined as 
 \[
-Z_i = \log(X_i / s_i + c) \;,
+Z_{ig} = \log(X_{ig} / s_i + c) \;,
 \]
-where $s_i$ is the size factor for $i$ and $c$ is the pseudo-count.
-(We will omit the gene indexing for clarity, as we are only referring to a single gene throughout.)
-The second-order Taylor series approximation for the expectation of $Z_i$ is
+where $c$ is a pseudo-count that ensures that the transformation is defined for $X_{ig} \ge 0$.
+The second-order Taylor series approximation for the expectation of $Z_{ig}$ is
 \[
-E(Z_i) \approx \log[E(X_i/s_i) + c] - \frac{\mbox{var}(X_i)s_i^{-2}}{2[E(X_i/s_i) + c]^2} \;.
+E(Z_{ig}) \approx \log[E(X_{ig}/s_i) + c] - \frac{\mbox{var}(X_{ig})s_i^{-2}}{2[E(X_{ig}/s_i) + c]^2} \;.
 \]
 The second term represents the discrepancy between the mean-log and the log-mean.
 
-Now, consider two cells $i=1$ and $i=2$ that differ only in their $s_i$.
-Assume that $g$ is non-DE between these two cells, such that $E(X_i/s_i)=\mu$ for both.
-This means that
+Now, consider two cells $i=1$ and $i=2$ that differ in their $s_i$.
+Assume that $g$ is non-DE between these two cells such that $E(X_{ig}/s_i)=\mu_g$ for both.
+The true log-fold change in the normalized expression values between these two cells is
 \[
-E(Z_i) \approx \log(\mu + c) - \frac{\mbox{var}(X_i)s_i^{-2}}{2(\mu + c)^2} \;.
+\delta_{12g} = \log\left[ \frac{E(X_{1g}/s_1)}{E(X_{2g}/s_2)} \right] = 0 \;.
 \]
-The difference in $E(Z_i)$ between these two cells is interpreted as the expected log-fold change in the normalized counts, and can be written as
+In analyses based on the log-transformed values, we use the difference in $E(Z_{ig})$ as a proxy for $\delta_{12g}$.
+First, we simplify the expression for $E(Z_i)$ to
+\[
+E(Z_{ig}) \approx \log(\mu_g + c) - \frac{\mbox{var}(X_{ig})s_i^{-2}}{2(\mu_g + c)^2} \;.
+\]
+This means that the difference in $E(Z_{ig})$ between these two cells is 
 \begin{equation}
-\Delta_{12} \approx \frac{\mbox{var}(X_1)s_1^{-2} -  \mbox{var}(X_2)s_2^{-2}}{2(\mu + c)^2} \;. \label{eqn:spuriousdiff}
+\Delta_{12g} \approx \frac{\mbox{var}(X_{1g})s_1^{-2} -  \mbox{var}(X_{2g})s_2^{-2}}{2(\mu + c)^2} \;. \label{eqn:spuriousdiff}
 \end{equation}
-Any non-zero $\Delta_{12}$ is a spurious difference as the log-fold change between cells should be zero after normalization.
-In general, $\Delta_{12}\neq 0$ due to differences in the size factors and subsequently variances at different points in the mean-variance relationship.
+In general, $\Delta_{12g} \neq 0$ due to differences in the size factors and subsequently variances (driven by the strong mean-variance relationship in count data).
+This represents a spurious difference on the log-scale as the gene is not actually DE, i.e., $\delta_{12g}=0$.
 
 We performed simulations to quantify this spurious difference in a range of scenarios for the typical $c=1$ (Figure~\ref{fig:maxeffect}).
-The difference was most prominent when the size factors were different and either or both of them were less than unity.
-This is consistent with Equation~\ref{eqn:spuriousdiff}, where $\Delta_{12}$ increases in magnitude with smaller $s_i$.
+We observed that it was most prominent when the size factors were different and either or both of them were less than unity.
+This is consistent with Equation~\ref{eqn:spuriousdiff}, where $\Delta_{12g}$ increases in magnitude with smaller $s_i$.
 We note that a 10-fold difference in the size factors across cells is not unusual in real scRNA-seq data \cite{lun2016pooling} due to the variability of capture efficiency and amplification.
-However, even in this situation, we can obtain a log-difference of 1.
-This corresponds to an artificial 2-fold change in expression that does not correspond to any biological difference.
+However, even in this situation, we can obtain a difference of 1 in the mean log-values.
+This corresponds to an artificial 2-fold change in expression that does not correspond to any biological effect.
 
 \begin{figure}[btp]
 \centering
@@ -177,10 +182,10 @@ Maximum differences are only shown for scenarios where $s_1 \ge s_2$, for simpli
 \label{fig:maxeffect}
 \end{figure}
 
-These spurious differences are amplified in distance calculations involving hundreds or thousands of affected genes.
-The $\Delta_{12}$ is effectively summed across many genes, resulting in a systematic increase in the distance between cells with different $s_i$. 
-This can result in the formation of spurious clusters or trajectories (Figure~\ref{fig:structures}) based solely on the log-transformation.
-It hardly needs to be said that these artificial structures can be highly misleading when characterizing the heterogeneity of a cellular population.
+The effect of these spurious differences is amplified in distance calculations involving hundreds or thousands of affected genes.
+The value of $\Delta_{12g}$ is effectively summed across many non-DE genes, resulting in a systematic increase in the distance between cells with different $s_i$. 
+This results in the formation of spurious clusters or trajectories (Figure~\ref{fig:structures}) based solely on the log-transformation.
+Such artificial structures can be highly misleading when characterizing the heterogeneity of a cellular population.
 
 \begin{figure}[btp]
 \centering
@@ -207,7 +212,7 @@ We verified the existence of this effect in real scRNA-seq data from the 10X Gen
 We used the publicly available ERCC data set (\url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/ercc}) in which gel emulsion beads containing ERCC spike-in transcripts were captured into droplets.
 The composition of the ERCC transcripts should be constant in all droplets, so there should not be any difference in the expression profiles after library size normalization.
 However, we observed a systematic non-zero difference in the mean log-expression values when comparing the smallest and largest droplets (Figure~\ref{fig:ercc}a).
-This is fully attributable to the log-transformation, as no such difference is present in the log-fold change between the mean counts after normalization (Figure~\ref{fig:ercc}b).
+This is fully attributable to the log-transformation, as no such difference is present in the log-fold change between the mean normalized expression values (Figure~\ref{fig:ercc}b).
 
 \begin{figure}
 \centering
