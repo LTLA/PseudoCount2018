@@ -174,9 +174,9 @@ This corresponds to an artificial 2-fold change in expression that does not corr
     \caption{}
 \end{subfigure}
 \caption{Maximum difference in the log-expression values for non-DE simulated data.
-Each difference was computed between the average $Z_i$ of 10000 counts for $i=1$ and 2, using $c=1$.
-Counts were sampled from a negative binomial distribution with mean $\mu s_i$ and the specified dispersion $\varphi$.
-For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu \in [10^{-3}, 10^3]$.
+Each difference was computed between the average $Z_{ig}$ of 10000 counts for $i=1$ and 2 with $c=1$.
+Counts were sampled from a negative binomial distribution with mean $\mu_g s_i$ and the specified dispersion $\varphi$.
+For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu_g \in [10^{-3}, 10^3]$.
 Maximum differences are only shown for scenarios where $s_1 \ge s_2$, for simplicity.
 }
 \label{fig:maxeffect}
@@ -198,10 +198,11 @@ Such artificial structures can be highly misleading when characterizing the hete
     \caption{}
 \end{subfigure}
 \caption{Artificial structures induced by the log-transformation in simulations with no true structure.
-(a) Principal components analysis (PCA) plot of $Z_i$ computed with $c=1$, for cells with large ($s_i =10$) and small size factors ($s_i=0.1$), 
-Counts were sampled independently from a Poisson distribution with a mean of $s_i$ for each cell $i$. 
-Each point represents a cell and the percentage of variance explained by each principal component (PC) is shown in parentheses. 
-(a) PCA plot of $Z_i$ computed with $c=1$, for cells with $s_i$ sampled from an exponential distribution with rate of 1.
+(a) Principal components analysis (PCA) plot of $Z_{ig}$ computed with $c=1$, for cells with large ($s_i =10$) and small size factors ($s_i=0.1$), 
+Counts for 1000 genes in 500 cells were sampled independently from a Poisson distribution with a mean of $s_i$ for each cell $i$. 
+Each point represents a cell, coloured by whether its $s_i$ was large or small.
+The percentage of variance explained by each principal component (PC) is also shown in parentheses. 
+(a) PCA plot of $Z_{ig}$ computed with $c=1$, for cells with $s_i$ sampled from an exponential distribution with rate of 1.
 Counts were sampled as described for (a).
 Each point represents a cell coloured according to the value of $s_i$.
 }
@@ -225,8 +226,9 @@ This is fully attributable to the log-transformation, as no such difference is p
     \caption{}
 \end{subfigure}
 \caption{Effect of log-transformation on the comparison between large and small droplets in the ERCC 10X Genomics data set.
-(a) Differences in the mean $Z_i$ between the top 20\% of libraries with the largest size factors and the bottom 20\%.
-Size factors were calculated by scaling the library sizes to a mean of unity across cells, and the pseudo-count was set to unity.
+(a) Differences in the mean $Z_{ig}$ between the top 20\% of libraries with the largest size factors and the bottom 20\%.
+Size factors were calculated by scaling the library sizes to a mean of unity across cells.
+The pseudo-count was set to unity.
 Only libraries with total counts above 100 were considered.
 Each point represents a single ERCC spike-in transcript.
 (b) Log-fold change in the mean normalized count between the same groups of libraries for each ERCC transcript.}
@@ -345,9 +347,9 @@ We observe this in a range of simulation scenarios (Figure~\ref{fig:cappederr}),
     \caption{}
 \end{subfigure}
 \caption{Maximum difference in the log-expression values for non-DE simulated data after setting $c$ to $|s_1^{-1} - s_2^{-1}|$.
-Each difference was computed between the average $Z_i$ of 10000 counts for $i=1$ and 2.
-Counts were sampled from a negative binomial distribution with mean $\mu s_i$ and the specified dispersion $\varphi$.
-For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu \in [10^{-3}, 10^3]$.
+Each difference was computed between the average $Z_{ig}$ of 10000 counts for $i=1$ and 2.
+Counts were sampled from a negative binomial distribution with mean $\mu_g s_i$ and the specified dispersion $\varphi$.
+For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu_g \in [10^{-3}, 10^3]$.
 Results are not shown for scenarios where $s_1=s_2$ as no difference in log-expression is expected (dashed lines connect adjacent points for ease of visualization).
 }
 \label{fig:cappederr}

@@ -46,7 +46,7 @@ for (disp in dispersions) {
 
     output <- output/log(2)
     plot(all.sf, numeric(length(all.sf)), ylim=range(output), type="n", log="x",
-        xlab="First size factor", ylab=expression(Log[2]-"fold change"),
+        xlab="First size factor", ylab=expression("Maximum difference in"~log[2]*"-expression"),
         main=sprintf("Dispersion of %s", disp))
 
     for (i in seq_len(nrow(output))) {
@@ -78,7 +78,7 @@ for (disp in dispersions) {
     output <- Matrix::forceSymmetric(output, "L")
     diag(output) <- NA
     plot(all.sf, numeric(length(all.sf)), ylim=c(0, 0.3), type="n", log="x",
-        xlab="First size factor", ylab=expression(Log[2]-"fold change"),
+        xlab="First size factor", ylab=expression("Maximum difference in"~log[2]*"-expression"),
         main=sprintf("Dispersion of %s", disp))
 
     for (i in seq_len(nrow(output))) {
