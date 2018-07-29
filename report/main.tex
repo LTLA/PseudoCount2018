@@ -387,6 +387,13 @@ The red line denotes the theoretical limit on $\tilde \Delta_{12g}$.}
 \label{fig:bigreal}
 \end{figure}
 
+To explore the behaviour of $\hat c$ in real data, we computed $\hat c$ for a number of real scRNA-seq data sets from the \href{http://bioconductor.org/packages/devel/workflows/html/simpleSingleCell.html}{\emph{simpleSingleCell}} workflows.
+Here, low-quality cells were removed with the \emph{scater} package \cite{mccarthy2017scater} and size factors were computed using the deconvolution method \cite{lun2016pooling}.
+With $\rho=1$, we obtained $\hat c$ values of 1.36 for the 416B data set \cite{lun2017assessing}, 4.05 for the mouse brain data set \cite{zeisel2015brain} and 2.22 for the peripheral bone mononuclear cell (PBMC) data set \cite{zheng2017massively}.
+These values are typical of pseudo-counts used for exploratory analyses of RNA-seq data \cite{chen2016reads}.
+They are also lower than the largest average counts per gene for each data set (PBMC: 216, brain: 1664, 416B: 63215),
+indicating that our recommended value for the pseudo-count is not so large as to entirely negate the variance stabilization activity of the log-transformation.     
+
 \section{Consequences of increasing the pseudo-count}
 The strength of our definition of $\hat c$ is that it can adaptively increase according to the observed variation in the size factors.
 However, this is not without consequences.
