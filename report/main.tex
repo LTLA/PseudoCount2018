@@ -310,6 +310,15 @@ Boxplots represent the distribution of mean transformed values across genes, wit
 \end{figure}
 
 \section{Choosing a larger pseudo-count}
+In theory, we could minimize $\tilde\Delta_{12g}$ by setting $c$ to some arbitrarily large value.
+However, as $c \to \infty$, the log-transformation approaches a linear transformation, i.e.,
+\[
+    Z_{ig} \approx \log(c) + \frac{X_{ig}}{s_i c} \;.
+\]
+Thus, using an arbitrarily large pseudo-count defeats the intended purpose of the log-transformation. 
+No variance stabilization is achieved and differences in the transformed values cannot be used as proxies for log-fold changes. 
+Instead, our aim must be to choose the smallest pseudo-count that restricts $\tilde\Delta_{12g}$ to an ``acceptable'' level.
+
 We assume that $X_{ig}$ follows a negative binomial (NB) distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
 This means that we can simplify the expression for $\Delta_{12g}$ to
 \begin{align*}
@@ -325,8 +334,8 @@ Thus, we can cap the maximum error $\tilde\Delta_{12g}$ regardless of the values
 \[
     c \propto |s_1^{-1} - s_2^{-1}| \;.
 \]
-If we set the proportionality constant to unity, the maximum log-difference should be 0.125 (or $[8\log(2)]^{-1} \approx 0.18$, on the $\log_2$-scale).
-We observe this in a range of simulation scenarios (Figure~\ref{fig:cappederr}), indicating that our approximate upper bound is correct. 
+If we set the proportionality constant $\rho$ to unity, the maximum log-difference should be 0.125 (or $[8\log(2)]^{-1} \approx 0.18$, on the $\log_2$-scale).
+We observe this bound in a range of simulation scenarios (Figure~\ref{fig:cappederr}), indicating that our approximation is accurate.
 
 \begin{figure}[btp]
 \centering
@@ -355,28 +364,28 @@ Results are not shown for scenarios where $s_1=s_2$ as no difference in log-expr
 \label{fig:cappederr}
 \end{figure}
 
-In theory, we could minimize $\tilde\Delta_{12g}$ by setting $c$ to some arbitrarily large value.
-However, as $c \to \infty$, the log-transformation approaches a linear transformation, i.e.,
-\[
-    Z_{ig} \approx \log(c) + \frac{X_{ig}}{s_i c} \;.
-\]
-Thus, using an arbitrarily large pseudo-count defeats the intended purpose of the log-transformation. 
-No variance stabilization is achieved and differences in the transformed values cannot be used as proxies for log-fold changes. 
-Instead, our aim must be to choose the smallest pseudo-count that restricts $\tilde\Delta_{12g}$ to an acceptable level.
-To this end, we would also expect the chosen $c$ to be comparable to the magnitude of $E(X_{ig}/s_i)$.
-Otherwise, if $c$ is much larger, we lose the benefits of the log-transformation.
-
-In practice, downstream procedures such as clustering will compare many cells to one another instead of just two specific cells.
+In practice, downstream procedures such as clustering will compare many cells to one another instead of just two specific (groups of) cells.
 The exact choices of $s_1$ and $s_2$ are not obvious when considering the calculation of a single pseudo-count for the entire data set.
 A general strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
 (or robust equivalents thereof, e.g., the 5\textsuperscript{th} and 95\textsuperscript{th} percentiles).
 This ensures that the difference in log-values for a non-DE gene does not exceed the theoretical upper bound for any pair of cells.
 We thus define our empirical pseudo-count as
 \[
-\hat c = \max\{1, |s_{min}^{-1} - s_{max}^{-1}|\} \;,
+\hat c = \max\{1, \rho |s_{min}^{-1} - s_{max}^{-1}|\} \;,
 \]
 which ensures that the pseudo-count is at least unity when all size factors are equal.
-The proportionality constant for $c$ is also set to unity, which provides a compromise between restricting $\tilde\Delta_{12g}$ and keeping the pseudo-count as small as possible.
+We suggest setting $\rho=1$, which provides a compromise between restricting $\tilde\Delta_{12g}$ and keeping the pseudo-count as small as possible.
+Applying this strategy to the ERCC data set limits the maximum error close to the theoretical upper bound (Figure~\ref{fig:bigreal}a).
+
+\begin{figure}
+\begin{center}
+    \includegraphics[width=0.5\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=3]{../scripts/pics/ercc.pdf}
+\end{center}
+\caption{Effect of log-transformation with $\hat c$ and $\rho =1$ in the ERCC data set.
+Differences in the mean $Z_{ig}$ are shown between the top and bottom 20\% of libraries with the largest and smallest size factors.
+The red line denotes the theoretical limit on $\tilde \Delta_{12g}$.}
+\label{fig:bigreal}
+\end{figure}
 
 \section{Consequences of increasing the pseudo-count}
 The strength of our definition of $\hat c$ is that it can adaptively increase according to the observed variation in the size factors.
