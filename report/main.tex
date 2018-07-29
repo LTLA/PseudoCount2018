@@ -414,19 +414,30 @@ This will prevent the resolution of biological signal that is only present in lo
 %\end{figure}
 
 We recommend the following strategy to mitigate the disadvantages of using a larger pseudo-count.
-Initial exploratory data analyses should be performed with the default pseudo-count, e.g., $c=1$.
+Initial exploratory analyses should be performed with the default pseudo-count, e.g., $c=1$.
 This avoids excessive shrinkage of biological differences for low-abundance genes, especially if such shrinkage is unnecessary, 
 e.g., size factors do not differ systematically between clusters or across trajectories.
-However, if there is a correlation between the identified biological structures and the size factors, the exploratory analysis should be repeated with a larger pseudo-count of $\hat c$. 
-(A more refined choice of $c$ can be made for comparisons between specific subpopulations, but we will use the most general approach here.)
-This ensures that the detected clusters or trajectories are not driven by the artificial differences from the log-transformation.
+However, if there is a correlation between the putative structures and size factors, the analysis should be repeated with a larger pseudo-count of $\hat c$. 
+(For comparisons between specific subpopulations, it is possible to choose the pseudo-count more carefully based on differences in their $s_i$.
+We will use the most general approach here for simplicity.)
+This ensures that any differential expression is not driven by the log-transformation.
 
-It is worth stressing that use of $\hat c$ only caps the spurious difference on a per-gene basis.
-When computing distances between expression profiles, small gene-wise errors can add up to a large systematic error in the distance.
-This means that artificial structures (Figure~\ref{fig:structures}) can still manifest.
-However, the aim of using a larger pseudo-count is not to eliminate such structures, which are an unavoidable consequence of the transformation.
-Rather, our intention is to suppress these artificial differences so that biological heterogeneity dominates the results of an exploratory data analysis.
-This includes both structured heterogeneity (e.g., different cell types, differentiation trajectories) as well as random biological noise (e.g., transcriptional bursting) that can mask the transformation-induced artifacts and prevent misleading conclusions.
+It is also worth stressing that the use of $\hat c$ only caps the spurious difference on a per-gene basis.
+Small gene-wise errors can add up to a large systematic error in the distance between cells, introducing artificial structures like those in Figure~\ref{fig:structures}.
+For example, consider two cells from the same population that differ only in their $s_i$.
+Further consider the Euclidean distance between the expectation of the log-expression vectors for these cells.
+The maximum distance in the log-space is $(8\rho)^{-1}\sqrt{n}$, where $n$ is the number of (in this case, non-DE) genes.
+Unlike the log-fold change, it is difficult to determine an intuitive ``acceptable'' limit for the spurious distance.
+Controlling it below a fixed value would also require $\rho \propto \sqrt{n}$, resulting in a prohibitively large $\hat c$.
+
+While artificial increases in the distance are obviously undesirable, they should be considered in the context of the entire exploratory analysis for scRNA-seq data.
+Say that, even after using $\hat c$, we still identify spurious clusters like those in Figure~\ref{fig:structures}.
+We attempt to characterize these clusters by identifying genes that are differentially expressed between them.
+At this point, the per-gene upper bound guaranteed by $\hat c$ becomes relevant as it limits the size of the spurious log-fold changes.
+It is then simple for the analyst to disregard genes with small log-fold changes below $\tilde \Delta_{12g}$,
+either by manual inspection or by using the upper bound in methods such as TREAT \cite{mccarthy2009testing}.
+If no relevant DE genes remain after this pruning, we ignore the spurious separation between these clusters.
+In this manner, the use of $\hat c$ protects us from misleading conclusions.
 
 \section{Discussion}
 It is worth speculating on some real situations in which the log-transformation is most likely to cause distortions.
