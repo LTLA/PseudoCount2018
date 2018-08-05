@@ -182,33 +182,6 @@ Maximum differences are only shown for scenarios where $s_1 \ge s_2$, for simpli
 \label{fig:maxeffect}
 \end{figure}
 
-The effect of these spurious differences is amplified in distance calculations involving hundreds or thousands of affected genes.
-The value of $\Delta_{12g}$ is effectively summed across many non-DE genes, resulting in a systematic increase in the distance between cells with different $s_i$. 
-This results in the formation of spurious clusters or trajectories (Figure~\ref{fig:structures}) based solely on the log-transformation.
-Such artificial structures can be highly misleading when characterizing the heterogeneity of a cellular population.
-
-\begin{figure}[btp]
-\centering
-\begin{subfigure}[b]{0.49\textwidth}
-    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/clusters.pdf}
-    \caption{}
-\end{subfigure}
-\begin{subfigure}[b]{0.49\textwidth}
-    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/trajectory.pdf}
-    \caption{}
-\end{subfigure}
-\caption{Artificial structures induced by the log-transformation in simulations with no true structure.
-(a) Principal components analysis (PCA) plot of $Z_{ig}$ computed with $c=1$, for cells with large ($s_i =10$) and small size factors ($s_i=0.1$), 
-Counts for 1000 genes in 500 cells were sampled independently from a Poisson distribution with a mean of $s_i$ for each cell $i$. 
-Each point represents a cell, coloured by whether its $s_i$ was large or small.
-The percentage of variance explained by each principal component (PC) is also shown in parentheses. 
-(a) PCA plot of $Z_{ig}$ computed with $c=1$, for cells with $s_i$ sampled from an exponential distribution with rate of 1.
-Counts were sampled as described for (a).
-Each point represents a cell coloured according to the value of $s_i$.
-}
-\label{fig:structures}
-\end{figure}
-
 We verified the existence of this effect in real scRNA-seq data from the 10X Genomics platform \cite{zheng2017massively}.
 We used the publicly available ERCC data set (\url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/ercc}) in which gel emulsion beads containing ERCC spike-in transcripts were captured into droplets.
 The composition of the ERCC transcripts should be constant in all droplets, so there should not be any difference in the expression profiles after library size normalization.
@@ -235,14 +208,42 @@ Each point represents a single ERCC spike-in transcript.
 \label{fig:ercc}
 \end{figure}
 
+The effect of spurious differences in $E(Z_{ig})$ is amplified in procedures that compute distances between cells.
+Consider the Euclidean distance between the expected log-normalized expression profiles of our two cells $i=1$ and 2.
+Ideally, the distance would be zero as there should be no difference in the expected location of these cells after normalization.
+However, the actual distance will be approximately equal to the square root of the sum of $\Delta_{12g}^2$ across all (non-DE) genes used in the calculation.
+This means that the distance between cells with different $s_i$ will be systematically larger than between cells with the same $s_i$.
+As a result, spurious clusters or trajectories can form (Figure~\ref{fig:structures}) solely due to the log-transformation.
+Such artificial structures can be highly misleading when characterizing the heterogeneity of a cellular population.
+
+\begin{figure}[btp]
+\centering
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/clusters.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/trajectory.pdf}
+    \caption{}
+\end{subfigure}
+\caption{Artificial structures induced by the log-transformation in simulations with no true structure.
+(a) Principal components analysis (PCA) plot of $Z_{ig}$ computed with $c=1$, for cells with large ($s_i =10$) and small size factors ($s_i=0.1$), 
+Counts for 1000 genes in 500 cells were sampled independently from a Poisson distribution with a mean of $s_i$ for each cell $i$. 
+Each point represents a cell, coloured by whether its $s_i$ was large or small.
+The percentage of variance explained by each principal component (PC) is also shown in parentheses. 
+(a) PCA plot of $Z_{ig}$ computed with $c=1$, for cells with $s_i$ sampled from an exponential distribution with rate of 1.
+Counts were sampled as described for (a).
+Each point represents a cell coloured according to the value of $s_i$.
+}
+\label{fig:structures}
+\end{figure}
+
 \section{Exploring possible remedies}
-The obvious solution is to not perform any transformation and to model the counts directly in all analyses.
-For example, methods like \textit{edgeR} \cite{robinson2010edgeR} can be used for DE analyses;
-methods like \textit{BASiCS} \cite{vallejos2016beyond} for detecting differentially or highly variable genes;
-and methods like \textit{zinbwave} \cite{risso2018general} for factor analysis.
-This accounts for the mean-variance relationship while avoiding any distortion of the expected expression.
+The obvious solution is to use methods that model the counts directly to account for the mean-variance relationship.
+For example, we could use \textit{BASiCS} \cite{vallejos2016beyond} for detecting highly variable genes or \textit{zinbwave} \cite{risso2018general} for factor analysis.
+This avoids the need for any variance-stabilizing transformation and subsequent distortion of the expected expression.
 However, most existing methods for scRNA-seq data analysis (e.g., clustering, dimensionality reduction) do not use count-based models.
-This is attributable to the difficulties in estimating model parameters, often separately for each gene and/or each cell,
+This is due to the difficulties in estimating model parameters, often separately for each gene and/or each cell,
 compared to algorithms that only need distances between cells as input.
 Thus, it is still desirable to obtain transformed data for compatibility with existing analysis methods.
 
@@ -309,15 +310,32 @@ Boxplots represent the distribution of mean transformed values across genes, wit
 \label{fig:alttransform}
 \end{figure}
 
-\section{Choosing a larger pseudo-count}
-In theory, we could minimize $\tilde\Delta_{12g}$ by setting $c$ to some arbitrarily large value.
+\section{Validating structures with DE analyses}
+In our opinion, the most concerning outcome is the formation of spurious clusters and trajectories.
+This can easily result in incorrect biological conclusions from an exploratory analysis of scRNA-seq data.
+That said, careful further analysis can provide some protection against these artificial structures.
+Say that we identify spurious clusters like those in Figure~\ref{fig:structures}.
+We attempt to characterize these clusters by identifying genes that are differentially expressed between them.
+Here, the key is to use count-based models like edgeR \cite{robinson2010edgeR} to perform the DE analysis.
+This avoids spurious non-zero differences in expression due to the log-transformation.
+If the analysis fails to yield any DE genes, we can infer that the separation was driven by the log-transformation and should be ignored.
+In this manner, we can avoid drawing misleading conclusions.
+
+While count-based models provide some protection from spurious structure, it is often the case that we still need to use per-gene transformed values for other steps in the analysis.
+This includes visualization of expression between groups (e.g., in boxplots, or by colouring dimensionality reduction plots), for which the log-transformation is often used to preserve relative differences across a wide range of expression values.
+It may also be more convenient to perform DE analyses on the log-transformed values, e.g., using $t$-tests \cite{law2014voom}, which are much faster and simpler than count-based models.
+Thus, we would like to reduce $\Delta_{12g}$ as much as possible for these applications.
+The most obvious method of doing so is to increase the pseudo-count.
+Indeed, we could force $\Delta_{12g}$ to zero for all genes by setting $c$ to some arbitrarily large value.
 However, as $c \to \infty$, the log-transformation approaches a linear transformation, i.e.,
 \[
     Z_{ig} \approx \log(c) + \frac{X_{ig}}{s_i c} \;.
 \]
 Thus, using an arbitrarily large pseudo-count defeats the intended purpose of the log-transformation. 
 No variance stabilization is achieved and differences in the transformed values cannot be used as proxies for log-fold changes. 
-Instead, our aim must be to choose the smallest pseudo-count that restricts $\tilde\Delta_{12g}$ to an ``acceptable'' level.
+Instead, we aim to choose a pseudo-count that restricts $\Delta_{12g}$ to an ``acceptable'' level for each gene.
+
+\section{Choosing a larger pseudo-count}
 
 We assume that $X_{ig}$ follows a negative binomial (NB) distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
 This means that we can simplify the expression for $\Delta_{12g}$ to
@@ -393,58 +411,6 @@ With $\rho=1$, we obtained $\hat c$ values of 1.36 for the 416B data set \cite{l
 These values are typical of pseudo-counts used for exploratory analyses of RNA-seq data \cite{chen2016reads}.
 They are also lower than the largest average counts per gene for each data set (PBMC: 216, brain: 1664, 416B: 63215),
 indicating that our recommended value for the pseudo-count is not so large as to entirely negate the variance stabilization activity of the log-transformation.     
-
-\section{Consequences of increasing the pseudo-count}
-The strength of our definition of $\hat c$ is that it can adaptively increase according to the observed variation in the size factors.
-However, this is not without consequences.
-A larger pseudo-count will mitigate the effect of spurious differences in non-DE genes but will also compromise interpretation of log-fold changes for genuine DE genes.
-A near-zero difference between subpopulations for low-abundance genes cannot be treated as an accurate estimate of the true log-fold change. 
-This is obviously problematic if important changes in expression of low-abundance genes are overlooked due to the small magnitude of the difference in log-values.
-Greater shrinkage also means that distance calculations are driven by moderate- to high-abundance genes.
-This will prevent the resolution of biological signal that is only present in low-abundance genes.
-
-%That said, detection power for DE genes in a formal hypothesis testing framework is mostly unaffected (Figure~\ref{fig:power}).
-%This is because the larger $c$ also reduces the variance in the log-transformed values, 
-%thus compensating for the decrease in the mean difference.
-
-%\begin{figure}
-%\begin{center}
-%\includegraphics[width=\textwidth]{../scripts/pics/power.pdf}
-%\end{center}
-%\caption{Welch $t$-statistics as a function of the DE fold change, for log-transformed data with a variety of added pseudo-counts.
-%We considered an experimental design with 1000 cells in each group.
-%Counts were sampled from a NB distribution with a mean of $\mu$ in one group and $f\mu$ in the other group for some fold change $f$.
-%Log$_2$-transformed values were computed with a range of pseudo-counts, and a Welch $t$-statistic was computed for the difference in transformed values between groups.
-%All size factors were set to unity during the transformation, to reflect the fact that $f$ represents geniune DE. 
-%}
-%\label{fig:power}
-%\end{figure}
-
-We recommend the following strategy to mitigate the disadvantages of using a larger pseudo-count.
-Initial exploratory analyses should be performed with the default pseudo-count, e.g., $c=1$.
-This avoids excessive shrinkage of biological differences for low-abundance genes, especially if such shrinkage is unnecessary, 
-e.g., size factors do not differ systematically between clusters or across trajectories.
-However, if there is a correlation between the putative structures and size factors, the analysis should be repeated with a larger pseudo-count of $\hat c$. 
-(For comparisons between specific subpopulations, it is possible to choose the pseudo-count more carefully based on differences in their $s_i$.
-We will use the most general approach here for simplicity.)
-This ensures that any differential expression is not driven by the log-transformation.
-
-It is also worth stressing that the use of $\hat c$ only caps the spurious difference on a per-gene basis.
-Small gene-wise errors can add up to a large systematic error in the distance between cells, introducing artificial structures like those in Figure~\ref{fig:structures}.
-For example, consider two cells from the same population that differ only in their $s_i$.
-Further consider the Euclidean distance between the expectation of the log-expression vectors for these cells.
-The maximum distance in the log-space is $(8\rho)^{-1}\sqrt{n}$, where $n$ is the number of (in this case, non-DE) genes.
-Unlike the log-fold change, it is difficult to determine an intuitive ``acceptable'' limit for the spurious distance.
-Controlling it below a fixed value would also require $\rho \propto \sqrt{n}$, resulting in a prohibitively large $\hat c$.
-
-While artificial increases in the distance are obviously undesirable, they should be considered in the context of the entire exploratory analysis for scRNA-seq data.
-Say that, even after using $\hat c$, we still identify spurious clusters like those in Figure~\ref{fig:structures}.
-We attempt to characterize these clusters by identifying genes that are differentially expressed between them.
-At this point, the per-gene upper bound guaranteed by $\hat c$ becomes relevant as it limits the size of the spurious log-fold changes.
-It is then simple for the analyst to disregard genes with small log-fold changes below $\tilde \Delta_{12g}$,
-either by manual inspection or by using the upper bound in methods such as TREAT \cite{mccarthy2009testing}.
-If no relevant DE genes remain after this pruning, we ignore the spurious separation between these clusters.
-In this manner, the use of $\hat c$ protects us from misleading conclusions.
 
 \section{Discussion}
 It is worth speculating on some real situations in which the log-transformation is most likely to cause distortions.
