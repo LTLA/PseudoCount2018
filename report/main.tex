@@ -104,7 +104,7 @@ This is driven by the simplicity of the log-transformation and its variance stab
 In particular, the log-transformation reduces the impact of stochastic fluctuations in the counts for high-abundance genes.
 This would otherwise result in large differences in the counts that are mostly uninteresting as the fold changes are small.
 Differences between log-values are also approximately interpretable as log-fold changes between cells, which are often more relevant than differences in the counts.
-This is useful for ensuring that the relative rather than absolute differences in the counts are used in distance-based procedures like clustering or trajectory construction.
+This is useful for ensuring that relative rather than absolute differences in the counts are used in distance-based procedures like clustering or trajectory construction.
 
 Despite its popularity, the log-transformation has a number of problems such as incomplete variance stabilization and arbitrariness in the choice of pseudo-count.
 One issue of particular interest is that the mean of the log-counts is not generally the same as the log-mean count \cite{hicks2017missing}.
@@ -128,7 +128,8 @@ The second-order Taylor series approximation for the expectation of $Z_{ig}$ is
 \[
 E(Z_{ig}) \approx \log[E(X_{ig}/s_i) + c] - \frac{\mbox{var}(X_{ig})s_i^{-2}}{2[E(X_{ig}/s_i) + c]^2} \;.
 \]
-The second term represents the discrepancy between the mean-log and the log-mean.
+This expectation represents the mean of the log-normalized expression, while the first term on the right represents the log-mean normalized expression (after adding $c$). 
+The second term on the right represents the discrepancy between these two values.
 
 Now, consider two cells $i=1$ and $i=2$ that differ in their $s_i$.
 Assume that $g$ is non-DE between these two cells such that $E(X_{ig}/s_i)=\mu_g$ for both.
@@ -152,7 +153,7 @@ We performed simulations to quantify this spurious difference in a range of scen
 We observed that it was most prominent when the size factors were different and either or both of them were less than unity.
 This is consistent with Equation~\ref{eqn:spuriousdiff}, where $\Delta_{12g}$ increases in magnitude with smaller $s_i$.
 We note that a 10-fold difference in the size factors across cells is not unusual in real scRNA-seq data \cite{lun2016pooling} due to the variability of capture efficiency and amplification.
-However, even in this situation, we can obtain a difference of 1 in the mean log-values.
+In this situation, we can easily obtain a difference of 1 in the mean log$_2$-values between cells.
 This corresponds to an artificial 2-fold change in expression that does not correspond to any biological effect.
 
 \begin{figure}[btp]
@@ -305,24 +306,25 @@ No variance stabilization is achieved and differences in the transformed values 
 Instead, we aim to choose a pseudo-count that restricts $\Delta_{12g}$ to an ``acceptable'' level for each gene.
 
 \section{Choosing a larger pseudo-count}
-
 We assume that $X_{ig}$ follows a negative binomial (NB) distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
 This means that we can simplify the expression for $\Delta_{12g}$ to
 \begin{align*}
-\Delta_{12} 
+\Delta_{12g} 
 &\approx \frac{\mu_g s_1^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} - \frac{\mu_g s_2^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} \\ 
 &= \frac{\mu_g (s_1^{-1} - s_2^{-1})}{2(\mu_g + c)^2} \;.
 \end{align*}
-This spurious difference in the log-expression values is maximized when $\mu_g = c$, yielding 
+This reaches its maximum absolute value for positive $\mu_g$ when $\mu_g = c > 0$, yielding 
 \[
-\tilde\Delta_{12g} = \frac{(s_1^{-1} - s_2^{-1})}{8c} \;.
+\tilde\Delta_{12g} = \left|\frac{(s_1^{-1} - s_2^{-1})}{8c}\right| \;.
 \]
-Thus, we can cap the maximum error $\tilde\Delta_{12g}$ regardless of the values of $s_i$ by requiring 
+We can control the maximum error $\tilde\Delta_{12g}$ below a threshold $\tau$ by setting  
 \[
-    c \propto |s_1^{-1} - s_2^{-1}| \;.
+    c = \rho |s_1^{-1} - s_2^{-1}| \;,
 \]
-If we set the proportionality constant $\rho$ to unity, the maximum log-difference should be 0.125 (or $[8\log(2)]^{-1} \approx 0.18$, on the $\log_2$-scale).
-We observe this bound in a range of simulation scenarios (Figure~\ref{fig:cappederr}), indicating that our approximation is accurate.
+where $\tau = (\rho 8)^{-1}$.
+If we set $\rho = 1$, the maximum difference in the mean log-values should be 0.125 (or $[8\log(2)]^{-1} \approx 0.18$, on the $\log_2$-scale).
+The observed maximum difference in simulations lies close to this bound at low dispersions (Figure~\ref{fig:cappederr}).
+At higher dispersions, the bound becomes less accurate but is nonetheless still conservative.
 
 \begin{figure}[btp]
 \centering
@@ -346,12 +348,13 @@ We observe this bound in a range of simulation scenarios (Figure~\ref{fig:capped
 after using an increased pseudo-count of $|s_1^{-1} - s_2^{-1}|$ prior to log-transformation.
 Simulations and calculations were performed as described for Figure~\ref{fig:maxeffect}.
 Results are only shown for scenarios where $s_1 > s_2$.
+The red dashed line represents the theoretical bound on the maximum difference.
 }
 \label{fig:cappederr}
 \end{figure}
 
 In practice, downstream procedures such as clustering will compare many cells to one another instead of just two specific (groups of) cells.
-The exact choices of $s_1$ and $s_2$ are not obvious when considering the calculation of a single pseudo-count for the entire data set.
+Consequently, the exact choices of $s_1$ and $s_2$ are not obvious when calculating a single pseudo-count for the entire data set.
 A general strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
 (or robust equivalents thereof, e.g., the 5\textsuperscript{th} and 95\textsuperscript{th} percentiles).
 This ensures that the difference in log-values for a non-DE gene does not exceed the theoretical upper bound for any pair of cells.
@@ -439,7 +442,6 @@ This is a more nuanced approach than filtering, as it ensures that strong biolog
 % Downsampling also assumes that the counts are Poisson-distributed.
 % This may be true for the sequencing itself \cite{marioni2008rnaseq} but is not true in general for library preparation.
 % Overdispersion (e.g., due to PCR amplification) would mean that the downsampled counts of cells with large size factors will still have smaller variance than the counts of cells with small size factors.
-
 
 Data transformations are powerful tools for exploratory analyses of scRNA-seq data.
 However, they also have the potential to introduce artificial differences, as we have shown for the log-transformation.
