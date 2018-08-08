@@ -298,10 +298,7 @@ Perhaps no single transformation exists that
     \caption{}
 \end{subfigure}
 \caption{Distribution of mean expression values for Poisson-distributed counts (a, b, c) or NB-distributed counts (d, e, f) after applying a variety of transformations.
-Simulated count data was generated for 10000 genes in 500 cells, with the mean count set to 1 for half of the cells (smaller group) and 100 for the other half (larger group).
-The dispersion was set to 1 for the NB simulations.
-Size factors were calculated by scaling the library sizes to a mean of unity across cells.
-Transformations were applied to the size factor-scaled counts, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
+Simulated count data was generated for non-DE genes in each of two groups of cells differing only in their size factors (smaller or larger).    
 Boxplots represent the distribution of mean transformed values across genes, with outlier genes shown as separate dots.
 }
 \label{fig:alttransform}
@@ -470,12 +467,21 @@ For comparison, we also computed the log-fold change (i.e., $\delta_{12g}$) betw
 Note that log-fold changes were computed after adding a pseudo-count of 1 to the means of both groups.
 
 \subsection{Simulations with artifical structures}
-Counts for 1000 genes in 500 cells were sampled independently from a Poisson distribution with a mean of $s_i$ for each cell $i$. 
-The size factor $s_i$ for each cell was set to 0.1 for half of the cells and to 10 for the other half.
+Counts for 1000 genes in 500 cells were sampled independently from a Poisson distribution with a mean of $\lambda_i$ for each cell $i$. 
+We set $\lambda_i=0.1$ for half of the cells and $\lambda_i=10$ for the other half.
+The size factor for each cell was defined as $\lambda_i$ after being scaled to a mean of unity across cells.
 We computed log-normalized expression values for all cells with a pseudo-count of 1, as previously described.
 We then performed PCA and examined the distribution of cells along the first two PCs.
-We also repeated this simulation where $s_i$ was sampled from a Uniform$(0.1, 5)$ distribution instead.
-Note that all genes are non-DE here, i.e., $E(X_{ig}/s_i)=1$ for all $g$ and $i$.
+We also repeated this simulation where $b_i$ was sampled from a Uniform$(0.1, 5)$ distribution instead.
+Note that all genes are non-DE in these simulations, i.e., $E(X_{ig}/s_i)$ is constant for all $g$ and $i$.
+
+\subsection{Simulations with different transformations}
+Counts for 10,000 genes in 500 cells were sampled from a Poisson or negative binomial distribution with the mean of $\lambda_i$ for each cell $i$.
+We partitioned the cells into groups of equal size, setting $\lambda_i=0.1$ for all cells in one group and $\lambda_i=10$ for all cells in the othter group.
+For the negative binomial distribution, we used a dispersion of 1.
+The size factor for each cell was defined as $\lambda_i$ after being scaled to a mean of unity across cells.
+Transformations were applied to the size factor-scaled counts, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
+We then computed the mean of the transformed values in each group for each gene.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
