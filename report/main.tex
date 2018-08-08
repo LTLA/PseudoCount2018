@@ -185,7 +185,7 @@ For simplicity, we only show results for scenarios where $a_1 \ge a_2$.
 \end{figure}
 
 We verified the existence of this effect in real scRNA-seq data from the 10X Genomics platform \cite{zheng2017massively}.
-We used the publicly available ERCC data set (\url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/ercc}) in which gel emulsion beads containing ERCC spike-in transcripts were captured into droplets.
+We used the publicly available ERCC data set (see Methods) in which gel emulsion beads containing ERCC spike-in transcripts were captured into droplets.
 The composition of the ERCC transcripts should be constant in all droplets, so there should not be any difference in the expression profiles after library size normalization.
 However, we observed a systematic non-zero difference in the mean log-expression values when comparing the smallest and largest droplets (Figure~\ref{fig:ercc}a).
 This is fully attributable to the log-transformation, as no such difference is present in the log-fold change between the mean normalized expression values (Figure~\ref{fig:ercc}b).
@@ -201,10 +201,7 @@ This is fully attributable to the log-transformation, as no such difference is p
     \caption{}
 \end{subfigure}
 \caption{Effect of log-transformation on the comparison between large and small droplets in the ERCC 10X Genomics data set.
-(a) Differences in the mean $Z_{ig}$ between the top 20\% of libraries with the largest size factors and the bottom 20\%.
-Size factors were calculated by scaling the library sizes to a mean of unity across cells.
-The pseudo-count was set to unity.
-Only libraries with total counts above 100 were considered.
+(a) Differences in the mean $Z_{ig}$ between the top 20\% of libraries with the largest size factors and the bottom 20\% (see Methods).
 Each point represents a single ERCC spike-in transcript.
 (b) Log-fold change in the mean normalized count between the same groups of libraries for each ERCC transcript.}
 \label{fig:ercc}
@@ -457,11 +454,21 @@ Our recommendation is to increase the pseudo-count in cases where size factor va
 
 \subsection{Simulated log-fold changes for non-DE genes}
 We considered two groups of 10,000 cells where all cells in the same group $j$ were assigned the same size factor $s_i=a_j$.
-The count $X_{ig}$ for each cell $i$ was independently sampled from a negative binomial distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
-We computed the mean $Z_{ig}$ across all cells in each group, denoted as $\bar Z_{jg}$ for group $j$.
-The difference in $\bar Z_{jg}$ between groups was used as an estimate of $\Delta_{12g}$.
-For each combination of the first size factor ($a_1$), second size factor ($a_2$) and $\varphi$, the maximum difference was determined across all $\mu_g \in [10^{-3}, 10^3]$.
+For a non-DE gene $g$, the count $X_{ig}$ for each cell $i$ was independently sampled from a negative binomial distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
+We computed $Z_{ig}$ for all cells in each group using a pseudo-count $c$ of 1 as previously described.
+The difference in the mean $Z_{ig}$ between groups represents an estimate of $\Delta_{12g}$.
+The maximum difference in the means was then determined by testing a variety of gene abundances $\mu_g \in [10^{-3}, 10^3]$.
 We repeated this procedure across 10 simulation iterations and reported the average of the maximum differences across iterations.
+This was performed for each simulation scenario defined by the combination of the size factor for two groups ($a_1$ and $a_2$, where $a_1 \ge a_2$) and $\varphi$.
+
+\subsection{Log-fold changes in the 10X ERCC data set}
+We obtained the ERCC data set from the 10X Genomics website (\url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/ercc}).
+We retained all libraries with total counts greater than 100.
+Size factors were defined as the library sizes, scaled to a mean of unity across libraries.
+We defined two groups in this data set, with the first group containing the top 20\% of libraries with the largest size factors and the second group containing the bottom 20\%.
+For each ERCC transcript, we computed the difference in the mean log-normalized expression values between groups (i.e., $\Delta_{12g}$).
+For comparison, we also computed the log-fold change (i.e., $\delta_{12g}$) between groups based on the mean normalized expression.
+Note that log-fold changes were computed after adding a pseudo-count of 1 to the means of both groups.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
