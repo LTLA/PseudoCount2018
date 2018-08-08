@@ -392,17 +392,16 @@ Some arithmetic yields
 \[
  \log\left(\frac{X_{ig}}{s_i}+ c\right) = \log\left(\frac{X_{ig}}{cs_i}+ 1\right) + \log c \;,
 \]
-where the constant $\log c$ on the right hand side can be ignored in any step that involves computing differences between log-values.
-Thus, instead of naively adding a non-unity $c$, we can achieve the same result by multiplying $s_i$ by the chosen $c$, performing scaling normalization with $cs_i$, and then log-transforming after adding 1 to the normalized values.
-This preserves sparsity and non-negativeness in the log-expression matrix.
+where the constant $\log(c)$ on the right hand side can be ignored in any step that involves computing differences between log-values.
+By computing the first term on the right, we can preserve sparsity and non-negativeness in the log-expression matrix.
 
 As an aside, it is also worth commenting on the widespread use of log-transformed counts-per-million (CPM) values and their relatives, e.g., transcripts-per-million or fragments-per-kilobase-million.
 Log-CPM values are typically computed by adding 1 to the CPM values, for the same reasons mentioned above.
 However, this is equivalent to using a pseudo-count equal to the library size (i.e., total count across all genes) in millions.
-Data sets with an average library size of 10 million would use a pseudo-count of 10, while data sets with an average library size of 10,000 would use a pseudo-count of 0.01.
+For example, data sets with an average library size of 10 million would use a pseudo-count of 10, while data sets with an average library size of 10,000 would use a pseudo-count of 0.01.
 This is not desirable as data sets with small library sizes are those with the largest $\Delta_{12g}$ (as $\mu_g$ is small) and in most need of large pseudo-counts.
-By comparison, the approximation of the log-fold change by differences in log-values should improve in quality with greater coverage.
-Adaptively increasing the pseudo-count scales up the bias with the coverage, such that the log-fold change estimates are not consistent.
+In contrast, the approximation of the log-fold change by differences in log-values should improve with greater coverage.
+Increasing the pseudo-count counteracts this effect such that the log-fold change estimates are not consistent with respect to coverage.
 
 \section{Discussion}
 It is worth speculating on some real situations in which the log-transformation is most likely to cause distortions.
