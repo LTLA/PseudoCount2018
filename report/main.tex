@@ -367,11 +367,10 @@ We observe this bound in a range of simulation scenarios (Figure~\ref{fig:capped
     \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=4]{../scripts/pics/error_bound.pdf}
     \caption{}
 \end{subfigure}
-\caption{Maximum difference in the log-expression values for non-DE simulated data after setting $c$ to $|s_1^{-1} - s_2^{-1}|$.
-Each difference was computed between the average $Z_{ig}$ of 10000 counts for $i=1$ and 2.
-Counts were sampled from a negative binomial distribution with mean $\mu_g s_i$ and the specified dispersion $\varphi$.
-For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu_g \in [10^{-3}, 10^3]$.
-Results are not shown for scenarios where $s_1=s_2$ as no difference in log-expression is expected (dashed lines connect adjacent points for ease of visualization).
+\caption{Maximum difference in the log-expression values for non-DE genes between groups of cells differing only in their size factors, 
+after using an increased pseudo-count of $|s_1^{-1} - s_2^{-1}|$ prior to log-transformation.
+Simulations and calculations were performed as described for Figure~\ref{fig:maxeffect}.
+Results are only shown for scenarios where $s_1 > s_2$.
 }
 \label{fig:cappederr}
 \end{figure}
