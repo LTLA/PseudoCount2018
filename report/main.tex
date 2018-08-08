@@ -173,11 +173,13 @@ This corresponds to an artificial 2-fold change in expression that does not corr
     \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=4]{../scripts/pics/max_effect.pdf}
     \caption{}
 \end{subfigure}
-\caption{Maximum difference in the log-expression values for non-DE simulated data.
-Each difference was computed between the average $Z_{ig}$ of 10000 counts for $i=1$ and 2 with $c=1$.
-Counts were sampled from a negative binomial distribution with mean $\mu_g s_i$ and the specified dispersion $\varphi$.
-For each combination of the first size factor ($s_1$), second size factor ($s_2$) and $\varphi$, the maximum difference was determined across all $\mu_g \in [10^{-3}, 10^3]$.
-Maximum differences are only shown for scenarios where $s_1 \ge s_2$, for simplicity.
+\caption{Maximum difference in the mean log$_2$-expression values for a non-DE gene due to size factor differences.
+We simulated counts for non-DE genes in two groups of cells, where the size factor was the same for all cells in the same group (see Methods).
+Each simulation scenario was defined by the size factor used for the first group ($a_1$), that for the second group ($a_2$), and the negative binomial dispersion.
+For each scenario, we computed the difference between the mean $Z_{ig}$ for each group and determined the maximum difference across genes of varying abundance.
+Values represent the average of the maximum across 10 simulation iterations.
+Standard errors were negligible and are not shown.
+For simplicity, we only show results for scenarios where $a_1 \ge a_2$.
 }
 \label{fig:maxeffect}
 \end{figure}
@@ -450,6 +452,16 @@ This is a more nuanced approach than filtering, as it ensures that strong biolog
 Data transformations are powerful tools for exploratory analyses of scRNA-seq data.
 However, they also have the potential to introduce artificial differences, as we have shown for the log-transformation.
 Our recommendation is to increase the pseudo-count in cases where size factor variation may be responsible for spurious structure in the data.
+
+\section{Methods}
+
+\subsection{Simulated log-fold changes for non-DE genes}
+We considered two groups of 10,000 cells where all cells in the same group $j$ were assigned the same size factor $s_i=a_j$.
+The count $X_{ig}$ for each cell $i$ was independently sampled from a negative binomial distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
+We computed the mean $Z_{ig}$ across all cells in each group, denoted as $\bar Z_{jg}$ for group $j$.
+The difference in $\bar Z_{jg}$ between groups was used as an estimate of $\Delta_{12g}$.
+For each combination of the first size factor ($a_1$), second size factor ($a_2$) and $\varphi$, the maximum difference was determined across all $\mu_g \in [10^{-3}, 10^3]$.
+We repeated this procedure across 10 simulation iterations and reported the average of the maximum differences across iterations.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
