@@ -1,3 +1,5 @@
+# This script estimates the spurious difference due to the log-transformation.
+
 #########################################
 # Defining some common functions.
 
@@ -83,36 +85,46 @@ dev.off()
 set.seed(1000)
 pdf("pics/error_bound.pdf")
 for (disp in dispersions) { 
-    output <- matrix(0, length(all.sf), length(all.sf))
 
-    for (i1 in seq_along(all.sf)) {
-        for (i2 in seq_len(i1-1)) {
-            pseudo <- abs(1/all.sf[i1] - 1/all.sf[i2])
-            output[i1, i2] <- FIND_MAX_ERR(s1=all.sf[i1], s2=all.sf[i2], pseudo=pseudo, size=1/disp)
+    collected <- vector("list", 10)
+    for (it in seq_along(collected)) {
+        output <- matrix(0, length(all.sf), length(all.sf))
+        for (i1 in seq_along(all.sf)) {
+            for (i2 in seq_len(i1-1)) {
+                pseudo <- abs(1/all.sf[i1] - 1/all.sf[i2])
+                output[i1, i2] <- FIND_MAX_ERR(s1=all.sf[i1], s2=all.sf[i2], pseudo=pseudo, size=1/disp)
+            }
+        }
+        collected[[it]] <- output
+    }
+
+    collected <- do.call(abind::abind, c(collected, list(along=3)))
+    output.mean <- output.se <- matrix(0, length(all.sf), length(all.sf))
+    for (i in seq_along(all.sf)) {
+        for (j in seq_len(i)) {
+            current <- collected[i,j,]
+            output.mean[i,j] <- mean(current)
+            output.se[i,j] <- sd(current)/sqrt(length(current))
         }
     }
 
-    output <- output/log(2)
-    output <- Matrix::forceSymmetric(output, "L")
-    diag(output) <- NA
-    plot(all.sf, numeric(length(all.sf)), ylim=c(0, 0.3), type="n", log="x",
+    output.mean <- output.mean/log(2)
+    output.se <- output.se/log(2)
+    upper <- output.mean + output.se
+
+    plot(all.sf, numeric(length(all.sf)), ylim=c(0.1, 0.2), type="n", log="x",
         xlab="First size factor", ylab=expression("Maximum difference in"~log[2]*"-expression"),
         main=sprintf("Dispersion of %s", disp))
 
     for (i in seq_len(nrow(output))) {
-        current <- output[i,]
-        lines(all.sf, current, lwd=2)
-        lines(all.sf, current, lwd=1.5, col=col[i])
-
-        if (i!=1L && i!=length(all.sf)) {
-            gap <- c(i-1, i+1)
-            lines(all.sf[gap], current[gap], col=col[i], lty=2)
-        }
-
-        points(all.sf, current, pch=21, bg=col[i], cex=1.5)
+        current <- seq_len(i-1)
+        cur.mean <- output.mean[i,current]
+        lines(all.sf[current], cur.mean, lwd=2)
+        lines(all.sf[current], cur.mean, lwd=1.5, col=col[i])
+        points(all.sf[current], cur.mean, pch=21, bg=col[i], cex=1.5)
     }
 
-    abline(h=1/8/log(2), col="red")
-    legend("topright", fill=col, legend=all.sf, title="Second size factor") 
+    abline(h=1/8/log(2), col="red", lty=2)
+    legend("bottomright", fill=col, legend=all.sf, title="Second size factor") 
 }
 dev.off()
