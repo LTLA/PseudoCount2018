@@ -235,41 +235,16 @@ Each point represents a cell coloured by its value of $s_i$.
 \label{fig:structures}
 \end{figure}
 
-\section{Exploring possible remedies}
-The obvious solution is to use methods that model the counts directly to account for the mean-variance relationship.
-For example, we could use \textit{BASiCS} \cite{vallejos2016beyond} for detecting highly variable genes or \textit{zinbwave} \cite{risso2018general} for factor analysis.
-This avoids the need for any variance-stabilizing transformation and subsequent distortion of the expected expression.
-However, most existing methods for scRNA-seq data analysis (e.g., clustering, dimensionality reduction) do not use count-based models.
-This is due to the difficulties in estimating model parameters, often separately for each gene and/or each cell,
-compared to algorithms that only need distances between cells as input.
-Thus, it is still desirable to obtain transformed data for compatibility with existing analysis methods.
-
-Another possible solution is to remove discrepancies empirically after transformation.
-This is done in various types of batch correction \cite{ritchie2015limma,haghverdi2018batch} where systematic differences in transformed values between batches are eliminated.
-It is, however, not straightforward to achieve in general as the magnitude of the discrepancy depends on the mean (Equation~\ref{eqn:spuriousdiff}).
-An empirical correction would require an approach similar to that used in \textit{SCnorm} \cite{bacher2017scnorm}.
-If we assume that most genes at any given abundance interval are mostly non-DE across all cells, any systematic trends in the transformed values with respect to $s_i$ for the genes in that interval must be artificial and should be removed.
-This assumption is considerably stronger than that used in scaling normalization (which only requires a non-DE majority across all genes),
-and cannot handle enrichment of DE genes, e.g., at high abundances due to strong upregulation.
-It is also difficult to fit an accurate and robust trend to discrete transformed values for low-abundance genes.
-
-A more drastic approach would be to downsample all cells to match the cell with the smallest size factor.
-This would ensure that the variance (for Poisson-distributed counts) is the same across all cells, thus avoiding spurious log-fold changes between cells.
-However, it involves discarding a large amount of sequencing information and is equivalent to forcibly increasing the noise for high-quality cells that were deeply sequenced.
-Biological signal may subsequently be lost, especially if the size factors are highly variable and considerable downsampling is required.
-Downsampling also assumes that the counts are Poisson-distributed.
-This may be true for the sequencing itself \cite{marioni2008rnaseq} but is not true in general for library preparation.
-Overdispersion (e.g., due to PCR amplification) would mean that the downsampled counts of cells with large size factors will still have smaller variance than the counts of cells with small size factors.
-
-Finally, we explore the use of other transformations with different statistical properties.
-We considered the square root, which provides good variance stabilization for Poisson-distributed counts;
-and the variance stabilizing transformation (VST) for negative binomial (NB)-distributed counts from \emph{DESeq2} \cite{love2014moderated}.
-In simulations of non-DE genes, we observed large differences in the mean of transformed values with both transformations (Figure~\ref{fig:alttransform}).
-This indicates that variance stabilization does not protect against spurious differences in the mean.
+\section{Exploring alternative transformations}
+We wondered whether this problem of artificial differences could be mitigated by using alternative transformations.
+We considered the square root, which provides variance stabilization for Poisson-distributed counts;
+and the variance stabilizing transformation (VST) for negative binomial-distributed counts from \emph{DESeq2} \cite{love2014moderated}.
+In simulations involving two groups of cells differing only in their size factors, we observed large differences in the group-specific means for non-DE genes after applying each transformation (Figure~\ref{fig:alttransform}).
+This indicates that variance stabilization does not inherently protect against spurious differences in the mean.
 Perhaps no single transformation exists that 
 (i) yields transformed values that are easily interpretable,
 (ii) provides complete variance stabilization, and
-(iii) avoids spurious differences in the mean of transformed values.
+(iii) avoids spurious differences in the means.
 
 \begin{figure}
 \centering
@@ -307,7 +282,7 @@ Boxplots represent the distribution of mean transformed values across genes, wit
 \section{Validating structure with DE analyses}
 In our opinion, the most effect of greatest concern is the formation of spurious clusters and trajectories.
 This can easily result in incorrect biological conclusions from an exploratory analysis of scRNA-seq data.
-That said, careful further analysis can provide some protection against these artificial structures.
+Fortunately, careful further analysis can provide some protection against these artificial structures.
 Say that we identify spurious clusters like those in Figure~\ref{fig:structures}.
 We attempt to characterize these clusters by identifying genes that are differentially expressed between them.
 Here, the key is to use count-based models like edgeR \cite{robinson2010edgeR} to perform the DE analysis.
@@ -433,12 +408,38 @@ Both of these are often observed in data from droplet-based scRNA-seq protocols,
 We would also expect the size factors within each experiment to vary across a continuum, yielding artificial trajectories (Figure~\ref{fig:structures}b) rather than distinct clusters (Figure~\ref{fig:structures}a).
 This suggests that caution is required when interpreting trajectories that are correlated with the size factors, especially in low-coverage droplet-based data.
 
+The ideal solution would be to use methods that model the counts directly to account for the mean-variance relationship.
+For example, we could use \textit{BASiCS} \cite{vallejos2016beyond} for detecting highly variable genes or \textit{zinbwave} \cite{risso2018general} for factor analysis.
+This would avoid the need for any variance-stabilizing transformation and subsequent distortion of the expected expression.
+However, most existing methods for scRNA-seq data analysis (e.g., clustering, dimensionality reduction) do not use count-based models.
+This is due to the difficulties in estimating model parameters, often separately for each gene and/or each cell,
+compared to algorithms that only need distances between cells as input.
+Thus, it is still desirable to obtain transformed data for compatibility with existing methods.
+
 In the context of scRNA-seq analysis workflows, additional procedures can be used to reduce transformation-induced artifacts.
 For example, quality control is typically performed to remove cells with small library sizes \cite{ilicic2016classification,lun2016stepbystep}.
 This reduces the variation in the size factors and the potential for artificial differences upon log-transformation.
 In addition, low-abundance genes can be filtered out, which provides further protection as genes with low counts are most affected by the log-transformation.
 We note that the use of a larger pseudo-count will also reduce the influence of low-abundance genes.
 This is a more nuanced approach than filtering, as it ensures that strong biological signal in low-abundance genes is not completely discarded for downstream applications.
+
+% Another possible solution is to remove discrepancies empirically after transformation.
+% This is done in various types of batch correction \cite{ritchie2015limma,haghverdi2018batch} where systematic differences in transformed values between batches are eliminated.
+% It is, however, not straightforward to achieve in general as the magnitude of the discrepancy depends on the mean (Equation~\ref{eqn:spuriousdiff}).
+% An empirical correction would require an approach similar to that used in \textit{SCnorm} \cite{bacher2017scnorm}.
+% If we assume that most genes at any given abundance interval are mostly non-DE across all cells, any systematic trends in the transformed values with respect to $s_i$ for the genes in that interval must be artificial and should be removed.
+% This assumption is considerably stronger than that used in scaling normalization (which only requires a non-DE majority across all genes),
+% and cannot handle enrichment of DE genes, e.g., at high abundances due to strong upregulation.
+% It is also difficult to fit an accurate and robust trend to discrete transformed values for low-abundance genes.
+% 
+% A more drastic approach would be to downsample all cells to match the cell with the smallest size factor.
+% This would ensure that the variance (for Poisson-distributed counts) is the same across all cells, thus avoiding spurious log-fold changes between cells.
+% However, it involves discarding a large amount of sequencing information and is equivalent to forcibly increasing the noise for high-quality cells that were deeply sequenced.
+% Biological signal may subsequently be lost, especially if the size factors are highly variable and considerable downsampling is required.
+% Downsampling also assumes that the counts are Poisson-distributed.
+% This may be true for the sequencing itself \cite{marioni2008rnaseq} but is not true in general for library preparation.
+% Overdispersion (e.g., due to PCR amplification) would mean that the downsampled counts of cells with large size factors will still have smaller variance than the counts of cells with small size factors.
+
 
 Data transformations are powerful tools for exploratory analyses of scRNA-seq data.
 However, they also have the potential to introduce artificial differences, as we have shown for the log-transformation.
