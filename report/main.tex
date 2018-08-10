@@ -280,9 +280,11 @@ Perhaps no single transformation exists that
     \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=3]{../scripts/pics/alternative_nb.pdf}
     \caption{}
 \end{subfigure}
-\caption{Distribution of mean expression values for Poisson-distributed counts (a, b, c) or NB-distributed counts (d, e, f) after applying a variety of transformations.
-Simulated count data was generated for non-DE genes in each of two groups of cells differing only in their size factors (smaller or larger).    
-Boxplots represent the distribution of mean transformed values across genes, with outlier genes shown as separate dots.
+\caption{Difference in the group-specific mean transformed expression values against the mean count for each gene, 
+for Poisson-distributed counts (a, b, c) or NB-distributed counts (d, e, f) after applying a variety of transformations (see Methods).
+Simulated count data was generated for non-DE genes in each of two groups of cells differing only in their size factors (smaller or larger).
+Colour intensity is proportional to the density of genes, with outliers shown as points.
+The red line represents a fitted loess curve.
 }
 \label{fig:alttransform}
 \end{figure}
@@ -492,11 +494,12 @@ We also repeated this simulation where $b_i$ was sampled from a Uniform$(0.1, 5)
 Note that all genes are non-DE in these simulations, i.e., $E(X_{ig}/s_i)$ is constant for all $g$ and $i$.
 
 \subsection{Simulations with different transformations}
-Counts for 10,000 genes in 500 cells were sampled from a Poisson or negative binomial distribution with the mean of $\lambda_i$ for each cell $i$.
-We partitioned the cells into groups of equal size, setting $\lambda_i=0.1$ for all cells in one group and $\lambda_i=10$ for all cells in the othter group.
-For the negative binomial distribution, we used a dispersion of 1.
-The size factor for each cell was defined as $\lambda_i$ after being scaled to a mean of unity across cells.
-Transformations were applied to the size factor-scaled counts, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
+Counts for 10,000 genes in 500 cells were sampled from a Poisson or negative binomial distribution with the mean of $\lambda_i \mu_g$ for each cell $i$.
+We sampled $\log_2(\mu_g)$ from a Uniform$(-5, 10)$ distribution to obtain a range of gene abundances.
+We partitioned the cells into two groups of equal size, setting $\lambda_i=0.1$ for all cells in one group and $\lambda_i=10$ for all cells in the other group.
+For the negative binomial distribution, we used a constant dispersion of 1 for simplicity.
+The size factor for cell $i$ was defined as $\lambda_i$ after being scaled to a mean of unity across cells.
+We applied the tested transformations -- square root, log, and VST -- to the normalized expression values, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
 We then computed the mean of the transformed values in each group for each gene.
 
 \bibliography{ref}

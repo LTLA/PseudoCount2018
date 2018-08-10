@@ -3,7 +3,7 @@
 set.seed(99999)
 ncells <- 500
 ngenes <- 10000
-abundance <- 2^runif(ngenes, -2, 10)
+abundance <- 2^runif(ngenes, -5, 10)
 
 # Specifying the size factor differences between cells.
 MULT <- rep(c(0.1, 10), each=ncells/2)
@@ -27,12 +27,12 @@ PLOT_FUN <- function(g1, g2, ...) {
 
 for (scenario in 1:2) {
     if (scenario==1L) {
-        lambda <- outer(abundance, size.fac, "*")
+        lambda <- outer(abundance, MULT, "*")
         X <- matrix(rpois(ngenes*ncells, lambda=lambda), ncol=ncells)
         ylim <- c(-3, 0.5)
         pdf("pics/alternative_pois.pdf", width=4, height=6)
     } else {
-        lambda <- outer(abundance, size.fac, "*")
+        lambda <- outer(abundance, MULT, "*")
         X <- matrix(rnbinom(ngenes*ncells, mu=lambda, size=1), ncol=ncells)
         ylim <- c(-4, 0.5)
         pdf("pics/alternative_nb.pdf", width=4, height=6)
