@@ -4,13 +4,14 @@
 library(scater)
 fpath <- "../../../simpleSingleCell/package/vignettes"
 
+##############################################
 # Computing the pseudo count and maximum for each data set.
 
 pseudos <- list()
 countsizes <- list()
 
 for (object in c("pbmc_data.rds", "brain_data.rds", "416B_data.rds")) {
-    sce <- readRDS(file.path("../../../simpleSingleCell/package/vignettes", object))
+    sce <- readRDS(file.path(fpath, object))
     size.facs <- sizeFactors(sce)
     big.pseudo <- abs(1/quantile(size.facs, 0.05) - 1/quantile(size.facs, 0.95))
 
@@ -21,3 +22,59 @@ for (object in c("pbmc_data.rds", "brain_data.rds", "416B_data.rds")) {
 
 pseudos
 countsizes
+
+##############################################
+# Exploring the brain data set in more detail.
+
+sce <- readRDS(file.path(fpath, "brain_data.rds"))
+med.sf <- lapply(split(sizeFactors(sce), sce$cluster), median)
+chosen.min <- which.min(med.sf)
+chosen.max <- which.max(med.sf)
+
+min.group <- sce$cluster==chosen.min
+max.group <- sce$cluster==chosen.max
+
+# Computing differences in logs and log-fold changes.
+min.log <- rowMeans(logcounts(sce)[,min.group])
+max.log <- rowMeans(logcounts(sce)[,max.group])
+
+sceX <- normalize(sce, return_log=FALSE)
+min.norm <- rowMeans(normcounts(sceX)[,min.group])
+max.norm <- rowMeans(normcounts(sceX)[,max.group])
+
+pdf("pics/real_brain.pdf")
+par(cex.lab=1.4, cex.main=1.5, mar=c(5.1, 4.3, 4.1, 2.1))
+plot(max.log - min.log, log2((max.norm + 1)/(min.norm+1)),
+    xlab=expression("Difference in"~log[2]*"-values"),
+    ylab=expression(Log[2]*"-fold change"), cex=0.5)
+abline(0, 1, col="red")
+dev.off()
+
+##############################################
+# Exploring the PBMC data set in more detail.
+
+sce <- readRDS(file.path(fpath, "pbmc_data.rds"))
+med.sf <- lapply(split(sizeFactors(sce), sce$Cluster), median)
+chosen.min <- which.min(med.sf)
+chosen.max <- which.max(med.sf)
+
+min.group <- sce$Cluster==chosen.min
+max.group <- sce$Cluster==chosen.max
+
+# Computing differences in logs and log-fold changes.
+library(Matrix)
+min.log <- rowMeans(logcounts(sce)[,min.group])
+max.log <- rowMeans(logcounts(sce)[,max.group])
+
+sceX <- normalize(sce, return_log=FALSE)
+min.norm <- rowMeans(normcounts(sceX)[,min.group])
+max.norm <- rowMeans(normcounts(sceX)[,max.group])
+
+pdf("pics/real_pbmc.pdf")
+par(cex.lab=1.4, cex.main=1.5, mar=c(5.1, 4.3, 4.1, 2.1))
+plot(max.log - min.log, log2((max.norm + 1)/(min.norm+1)),
+    xlab=expression("Difference in"~log[2]*"-values"),
+    ylab=expression(Log[2]*"-fold change"), cex=0.5)
+abline(0, 1, col="red")
+dev.off()
+
