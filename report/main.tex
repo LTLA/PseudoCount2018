@@ -118,12 +118,13 @@ We also show how the added pseudo-count can be increased to cap the discrepancy 
 
 \section{Quantifying the discrepancy}
 Let $X_{ig}$ denote a random variable for a non-negative count of a gene $g$ in cell $i$.
-The size factor $s_i$ represents the scaling bias in $i$, which is removed by computing the normalized expression value $X_{ig}/s_i$.
+The size factor $s_i$ represents the scaling bias in $i$, which is removed by computing the normalized expression value $X_{ig}/s_i$ \cite{anders2010differential}.
 The log-transformed normalized expression is defined as 
 \[
 Z_{ig} = \log\left(\frac{X_{ig}}{s_i}+ c\right) \;,
 \]
-where $c$ is a pseudo-count that ensures that the transformation is defined for $X_{ig} \ge 0$.
+where $c$ is a positive ``pseudo-count'' that ensures that the transformation is defined for $X_{ig} \ge 0$ and $s_i > 0$.
+This calculation and its variants are widespread in analyses of count data from high-throughput sequencing experiments -- for example, a similar approach is used by the \code{cpm} function in the \textit{edgeR} package \cite{robinson2010edgeR}, differing only in a slight adjustment to the effective library size (equivalent to $s_i$) for a given prior count (equivalent to $c$).
 The second-order Taylor series approximation for the expectation of $Z_{ig}$ is
 \[
 E(Z_{ig}) \approx \log[E(X_{ig}/s_i) + c] - \frac{\mbox{var}(X_{ig})s_i^{-2}}{2[E(X_{ig}/s_i) + c]^2} \;.
@@ -137,8 +138,8 @@ The true log-fold change in the normalized expression values between these two c
 \[
 \delta_{12g} = \log\left[ \frac{E(X_{1g}/s_1)}{E(X_{2g}/s_2)} \right] = 0 \;.
 \]
-In analyses based on the log-transformed values, we use the difference in $E(Z_{ig})$ as a proxy for $\delta_{12g}$.
-First, we simplify the expression for $E(Z_i)$ to
+In analyses based on the log-transformed values, we use the expected difference in $Z_{ig}$ as a proxy for $\delta_{12g}$.
+First, we simplify the expression for $E(Z_{ig})$ to
 \[
 E(Z_{ig}) \approx \log(\mu_g + c) - \frac{\mbox{var}(X_{ig})s_i^{-2}}{2(\mu_g + c)^2} \;.
 \]
@@ -236,7 +237,13 @@ Each point represents a cell coloured by its value of $s_i$.
 \label{fig:structures}
 \end{figure}
 
-\section{Exploring alternative transformations}
+The discrepancy described in Equation~\ref{eqn:spuriousdiff} is also consistent with the observations from Hicks \emph{et al.} \cite{hicks2017missing}.
+In their study, Hicks \emph{et al.} show that the log-normalized expression of many genes is anticorrelated with the ``detection rate'' (i.e. the percentage of non-zero counts in each cell) in a variety of scRNA-seq data sets.
+We note that the detection rate is often strongly associated with the size factor due to the sparsity of the data.
+Any increases to the coverage of a cell (and thus the size factor $s_i$) will naturally increase the detection rate as fewer zeroes are sampled,
+such that both are correlated with any error induced by the log-transformation.
+However, some caution is required when interpreting these correlations in real data due to the conflation of technical effects with genuine biological factors such as, e.g., differences in RNA content across cell types \cite{islam2011characterization,lun2017assessing}.
+
 We wondered whether this problem of artificial differences could be mitigated by using alternative transformations.
 We considered the square root, which provides variance stabilization for Poisson-distributed counts;
 and the variance stabilizing transformation (VST) for negative binomial-distributed counts from \emph{DESeq2} \cite{love2014moderated}.
@@ -293,7 +300,7 @@ In this manner, we can avoid drawing misleading conclusions.
 
 While count-based models provide some protection from spurious structure, it is often the case that we still need to use per-gene transformed values for other steps in the analysis.
 This includes visualization of expression between groups (e.g., in boxplots, or by colouring dimensionality reduction plots), for which the log-transformation is often used to preserve relative differences across a wide range of expression values.
-It may also be more convenient to perform DE analyses on the log-transformed values, e.g., using $t$-tests \cite{law2014voom}, which are much faster and simpler than count-based models.
+It may also be more convenient to perform DE analyses on the log-transformed values, e.g., using $t$-tests \cite{law2014voom,soneson2018bias}, which are faster and simpler to implement than count-based models.
 Thus, we would like to reduce $\Delta_{12g}$ as much as possible for these applications.
 The most obvious method of doing so is to increase the pseudo-count.
 Indeed, we could force $\Delta_{12g}$ to zero for all genes by setting $c$ to some arbitrarily large value.
