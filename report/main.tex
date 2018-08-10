@@ -426,9 +426,9 @@ It is also possible to use log-values computed with $\hat c$ in the initial expl
 However, this strategy is more difficult to justify as the magnitude of the error in the distance between cells does not have a straightforward interpretion.
 Any benefit from a large pseudo-count requires that the reduction in error is greater than the shrinkage of genuine biological differences.
 
-Pseudo-counts are often set to unity, which is motivated by a number of factors that have little to do with avoiding spurious differences.
-One reason is to ensure that zero counts always yield zero log-values, which ensures that sparse matrix representations are still effective for reducing memory usage of large data sets.
-A related motivation is to ensure that the log-transformed values are always non-negative, which is necessary for procedures such as non-negative factor analysis.
+Pseudo-counts are often set to unity for a number of reasons that have little to do with avoiding spurious differences.
+One reason is to ensure that zero counts always yield zero log-values, which ensures that sparse matrix representations are still effective for reducing memory usage when analyzing large data sets.
+A related motivation is to ensure that the log-transformed values are always non-negative, which is necessary for procedures such as non-negative matrix factorization.
 However, there is no need to conflate these considerations with the choice of pseudo-count.
 Some arithmetic yields 
 \[
