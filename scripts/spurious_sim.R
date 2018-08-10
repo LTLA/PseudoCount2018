@@ -37,6 +37,7 @@ dispersions <- c(0, 0.1, 1, 10)
 
 set.seed(1000)
 pdf("pics/max_effect.pdf")
+par(cex.lab=1.4, cex.main=1.5, mar=c(5.1, 4.3, 4.1, 2.1))
 for (disp in dispersions) { 
 
     collected <- vector("list", 10)
@@ -84,6 +85,7 @@ dev.off()
 
 set.seed(1000)
 pdf("pics/error_bound.pdf")
+par(cex.lab=1.4, cex.main=1.5, mar=c(5.1, 4.3, 4.1, 2.1))
 for (disp in dispersions) { 
 
     collected <- vector("list", 10)
@@ -112,9 +114,11 @@ for (disp in dispersions) {
     output.se <- output.se/log(2)
     upper <- output.mean + output.se
 
-    plot(all.sf, numeric(length(all.sf)), ylim=c(0.1, 0.2), type="n", log="x",
+    all.but.last <- head(all.sf, -1)
+    plot(all.but.last, numeric(length(all.but.last)), ylim=c(0.1, 0.2), type="n", log="x",
         xlab="First size factor", ylab=expression("Maximum difference in"~log[2]*"-expression"),
-        main=sprintf("Dispersion of %s", disp))
+        main=sprintf("Dispersion of %s", disp), xaxt="n")
+    axis(1, at=all.but.last, labels=all.but.last)
 
     for (i in seq_len(nrow(output))) {
         current <- seq_len(i-1)
@@ -125,6 +129,6 @@ for (disp in dispersions) {
     }
 
     abline(h=1/8/log(2), col="red", lty=2)
-    legend("bottomright", fill=col, legend=all.sf, title="Second size factor") 
+    legend("bottomright", fill=col[-1], legend=all.sf[-1], title="Second size factor") 
 }
 dev.off()
