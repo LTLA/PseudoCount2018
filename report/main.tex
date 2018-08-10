@@ -317,11 +317,11 @@ Instead, we aim to choose a pseudo-count that restricts $\Delta_{12g}$ to an ``a
 \section{Choosing a larger pseudo-count}
 We assume that $X_{ig}$ follows a negative binomial (NB) distribution with mean $s_i\mu_g$ and dispersion $\varphi$.
 This means that we can simplify the expression for $\Delta_{12g}$ to
-\begin{align*}
+\begin{align}
 \Delta_{12g} 
-&\approx \frac{\mu_g s_1^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} - \frac{\mu_g s_2^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} \\ 
-&= \frac{\mu_g (s_1^{-1} - s_2^{-1})}{2(\mu_g + c)^2} \;.
-\end{align*}
+&\approx \frac{\mu_g s_1^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} - \frac{\mu_g s_2^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} \nonumber \\
+&= \frac{\mu_g (s_1^{-1} - s_2^{-1})}{2(\mu_g + c)^2} \;. \label{eqn:nberr}
+\end{align}
 This reaches its maximum absolute value for positive $\mu_g$ when $\mu_g = c > 0$, yielding 
 \[
 \tilde\Delta_{12g} = \left|\frac{(s_1^{-1} - s_2^{-1})}{8c}\right| \;.
@@ -385,12 +385,21 @@ The red line denotes the theoretical limit on $\tilde \Delta_{12g}$.}
 \label{fig:bigreal}
 \end{figure}
 
-To explore the behaviour of $\hat c$ in real data, we computed $\hat c$ for a number of real scRNA-seq data sets from the \href{http://bioconductor.org/packages/devel/workflows/html/simpleSingleCell.html}{\emph{simpleSingleCell}} workflows.
-Here, low-quality cells were removed with the \emph{scater} package \cite{mccarthy2017scater} and size factors were computed using the deconvolution method \cite{lun2016pooling}.
+To explore its behaviour in real data, we computed $\hat c$ for a number of real scRNA-seq data sets. 
 With $\rho=1$, we obtained $\hat c$ values of 1.36 for the 416B data set \cite{lun2017assessing}, 4.05 for the mouse brain data set \cite{zeisel2015brain} and 2.22 for the peripheral bone mononuclear cell (PBMC) data set \cite{zheng2017massively}.
-These values are typical of pseudo-counts used for exploratory analyses of RNA-seq data \cite{chen2016reads}.
-They are also lower than the largest average counts per gene for each data set (PBMC: 216, brain: 1664, 416B: 63215),
-indicating that our recommended value for the pseudo-count is not so large as to entirely negate the variance stabilization activity of the log-transformation.
+These values are within the typical range of pseudo-counts used for exploratory analyses of RNA-seq data \cite{chen2016reads}.
+They also lie within the range of mean abundances in each data set -- we observe 217, 649 and 12636 genes with mean normalized expression values greater than $\hat c$ in the PBMC, brain and 416B data sets, respectively.
+This indicates that the computed $\hat c$ is not so large as to entirely negate the variance stabilization from log-transformation.
+It also justifies our strategy of controlling the maximum difference $\tilde \Delta_{12g}$, which occurs when the mean is close to $\hat c$.
+
+% In theory, we could be less conservative by using gene-specific pseudo-counts.
+% These would be computed by setting $\mu_g$ to the mean normalized expression of each gene, providing a more accurate measure of $\Delta_{12g}$ than the maximum across all $\mu_g$.
+% This would allow smaller pseudo-counts to be used if $\Delta_{12g}$ was already low for a particular gene.
+% However, for genes that are DE in a subset of cells, the mean count will not be a good proxy for the expected normalized expression in each cell.
+% Consider a gene that is highly expressed in one cell type and lowly expressed in (and non-DE between) two other types.
+% The large mean normalized expression for this gene drives the estimated $\Delta_{12g}$ to zero (Equation~\ref{eqn:nberr}), suggesting that a small pseudo-count can be used.
+% This provides no protection against potentially large spurious differences between the other two cell types where the expected expression is low.
+% For this reason (and simplicity), we use a single pseudo-count for the entire data set.
 
 \section{Practical use of larger pseudo-counts}
 Our suggestion is to use log-expression values computed with $\hat c$ during characterisation of population structures identified from exploratory analyses.
@@ -501,6 +510,12 @@ For the negative binomial distribution, we used a constant dispersion of 1 for s
 The size factor for cell $i$ was defined as $\lambda_i$ after being scaled to a mean of unity across cells.
 We applied the tested transformations -- square root, log, and VST -- to the normalized expression values, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
 We then computed the mean of the transformed values in each group for each gene.
+
+\subsection{Pseudo-count calculations for real scRNA-seq data}
+Count data from various scRNA-seq experiments were processed according to a published workflow \cite{lun2016stepbystep}.
+Briefly, low-quality cells were removed with the \emph{scater} package \cite{mccarthy2017scater} and size factors were computed using the deconvolution method \cite{lun2016pooling}.
+Values of $\hat c$ were then computed for each data set as previously described.
+For comparison, we also computed the mean of the normalized expression values for each gene.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}

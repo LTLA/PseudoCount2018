@@ -16,8 +16,8 @@ for (object in c("pbmc_data.rds", "brain_data.rds", "416B_data.rds")) {
 
     prefix <- sub("_data.rds", "", object)
     pseudos[[prefix]] <- big.pseudo
-    countsizes[[prefix]] <- max(Matrix::rowMeans(counts(sce)))
+    countsizes[[prefix]] <- sum(calcAverage(counts(sce), use_size_factors=size.facs) > big.pseudo)
 }
 
-countsizes
 pseudos
+countsizes
