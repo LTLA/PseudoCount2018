@@ -14,11 +14,10 @@ size.fac <- MULT
 size.fac <- size.fac/mean(size.fac)
 
 # Central plotting function.
-par(cex.lab=1.4, cex.main=1.5)
 PLOT_FUN <- function(g1, g2, ...) {
     Y <- g1-g2
     X <- log10(abundance)
-    smoothScatter(X, Y, xlab=expression(Log[10]~"mean abundance"), ylab="Difference in group means", ...)
+    smoothScatter(X, Y, xlab=expression(Log[10]~"mean count"), ylab="Difference in group means", ...)
     fit <- loess(Y ~ X, span=0.1)
     curve(predict(fit, data.frame(X=x)), add=TRUE, col="red", lwd=2)
 }
@@ -38,6 +37,7 @@ for (scenario in 1:2) {
         ylim <- c(-4, 0.5)
         pdf("pics/alternative_nb.pdf", width=4, height=6)
     }
+    par(cex.lab=1.4, cex.main=1.5)
 
     # Square rooting.
     rooted <- sqrt( t(t(X)/size.fac) )
