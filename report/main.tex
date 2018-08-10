@@ -191,6 +191,7 @@ We used the publicly available ERCC data set (see Methods) in which gel emulsion
 The composition of the ERCC transcripts should be constant in all droplets, so there should not be any difference in the expression profiles after library size normalization.
 However, we observed a systematic non-zero difference in the mean log-expression values when comparing the smallest and largest droplets (Figure~\ref{fig:ercc}a).
 This is fully attributable to the log-transformation, as no such difference is present in the log-fold change between the mean normalized expression values (Figure~\ref{fig:ercc}b).
+Discrepancies between the difference in mean log-values and the log-fold change are also present in real scRNA-seq data sets with variable size factors (Figures~\ref{fig:ercc}c, d).
 
 \begin{figure}
 \centering
@@ -202,10 +203,24 @@ This is fully attributable to the log-transformation, as no such difference is p
     \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=2]{../scripts/pics/ercc.pdf}
     \caption{}
 \end{subfigure}
-\caption{Effect of log-transformation on the comparison between large and small droplets in the ERCC 10X Genomics data set.
-(a) Differences in the mean $Z_{ig}$ between the top 20\% of libraries with the largest size factors and the bottom 20\% (see Methods).
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip]{../scripts/pics/real_brain.pdf}
+    \caption{}
+\end{subfigure}
+\begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip]{../scripts/pics/real_pbmc.pdf}
+    \caption{}
+\end{subfigure}
+\caption{Effect of the log-transformation on comparisons between groups in real scRNA-seq data.
+(a) Differences in the mean $Z_{ig}$ between the top 20\% of libraries with the largest size factors and the bottom 20\% in the ERCC 10X Genomics data set (see Methods).
 Each point represents a single ERCC spike-in transcript.
-(b) Log-fold change in the mean normalized count between the same groups of libraries for each ERCC transcript.}
+(b) Log-fold change in the mean normalized expression between the same groups of libraries for each ERCC transcript.
+(c) Differences in the mean $Z_{ig}$ for two clusters of cells with the largest and smallest median size factors in a brain scRNA-seq data set \cite{zeisel2015brain},
+compared to the log-fold change computed from the mean normalized expression.
+Each point represents a gene.
+(d) Same as (c) for the peripheral blood mononuclear cell data set from 10X Genomics.
+}
+
 \label{fig:ercc}
 \end{figure}
 
@@ -273,11 +288,11 @@ Perhaps no single transformation exists that
     \caption{}
 \end{subfigure}
 \begin{subfigure}[b]{0.32\textwidth}
-    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/alternative_nb.pdf}
+   \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=1]{../scripts/pics/alternative_nb.pdf}
     \caption{}
 \end{subfigure}
 \begin{subfigure}[b]{0.32\textwidth}
-    \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=3]{../scripts/pics/alternative_nb.pdf}
+   \includegraphics[width=\textwidth,trim=0mm 5mm 0mm 5mm,clip,page=3]{../scripts/pics/alternative_nb.pdf}
     \caption{}
 \end{subfigure}
 \caption{Difference in the group-specific mean transformed expression values against the mean count for each gene, 
@@ -296,9 +311,10 @@ Fortunately, careful further analysis can provide some protection against these 
 Say that we identify spurious clusters like those in Figure~\ref{fig:structures}.
 We attempt to characterize these clusters by identifying genes that are differentially expressed between them.
 Here, the key is to use count-based models like edgeR \cite{robinson2010edgeR} to perform the DE analysis.
-This avoids spurious non-zero differences in expression due to the log-transformation while accounting for complex mean-variance relationships in the count data.
+This directly accounts for complex mean-variance relationships in the count data, thereby avoiding the need for any transformation and concomitant artefacts.
 If the analysis fails to yield any DE genes, we can infer that the separation was driven by the log-transformation and should be ignored.
-In this manner, we can avoid drawing misleading conclusions.
+This strategy is motivated by Figures~\ref{fig:ercc}c and d, which show a noticeable difference in the observed effect sizes depending on whether they are computed from transformed or untransformed data -- possibly leading to different biological conclusions.
+Our results indicate that the use of untransformed data is more appropriate here.
 
 While count-based models provide some protection from spurious structure, it is often the case that we still need to use per-gene transformed values for other steps in the analysis.
 This includes visualization of expression between groups (e.g., in boxplots, or by colouring dimensionality reduction plots), for which the log-transformation is often used to preserve relative differences across a wide range of expression values.
@@ -483,7 +499,7 @@ The maximum difference in the means was then determined by testing a variety of 
 We repeated this procedure across 10 simulation iterations and reported the average of the maximum differences across iterations.
 This was performed for each simulation scenario defined by the combination of the size factor for two groups ($a_1$ and $a_2$, where $a_1 \ge a_2$) and $\varphi$.
 
-\subsection{Log-fold changes in the 10X ERCC data set}
+\subsection{Log-fold changes in real data sets}
 We obtained the ERCC data set from the 10X Genomics website (\url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/ercc}).
 We retained all libraries with total counts greater than 100.
 Size factors were defined as the library sizes, scaled to a mean of unity across libraries.
@@ -492,6 +508,15 @@ For each ERCC transcript, we computed the log-normalized expression values using
 We then computed the differences in the mean log-values between groups to obtain an estimate of $\Delta_{12g}$.
 For comparison, we also computed the log-fold change (i.e., $\delta_{12g}$) between groups based on the mean normalized expression.
 Note that log-fold changes were computed after adding a pseudo-count of 1 to the means of both groups.
+
+For the 416B, brain and PBMC data sets, counts were processed according to a published workflow \cite{lun2016stepbystep}.
+Briefly, low-quality cells were removed with the \emph{scater} package \cite{mccarthy2017scater} and size factors were computed using the deconvolution method \cite{lun2016pooling}.
+PCA was performed on the log-normalized expression values (computed with a pseudo-count of 1) after modelling the mean-variance trend, 
+and cells were clustered based on their PC scores using the shared nearest neighbours method \cite{xu2015identification}.
+In each data set, we identified the two clusters with the largest and smallest median size factors.
+We computed the difference in the mean log-expression values between clusters and compared this to the log-fold change between clusters calculated from the mean normalized expression.
+Note that kog-fold changes were calculated after adding a pseudo-count of 1 to the means of both groups,
+such that any discrepancy between the difference in mean log-values and the log-fold change is an estimate of $\Delta_{12g}$.
 
 \subsection{Simulations with artifical structures}
 Counts for 1000 genes in 500 cells were sampled independently from a Poisson distribution with a mean of $\lambda_i$ for each cell $i$. 
@@ -510,12 +535,6 @@ For the negative binomial distribution, we used a constant dispersion of 1 for s
 The size factor for cell $i$ was defined as $\lambda_i$ after being scaled to a mean of unity across cells.
 We applied the tested transformations -- square root, log, and VST -- to the normalized expression values, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
 We then computed the mean of the transformed values in each group for each gene.
-
-\subsection{Pseudo-count calculations for real scRNA-seq data}
-Count data from various scRNA-seq experiments were processed according to a published workflow \cite{lun2016stepbystep}.
-Briefly, low-quality cells were removed with the \emph{scater} package \cite{mccarthy2017scater} and size factors were computed using the deconvolution method \cite{lun2016pooling}.
-Values of $\hat c$ were then computed for each data set as previously described.
-For comparison, we also computed the mean of the normalized expression values for each gene.
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
