@@ -1,4 +1,4 @@
-# Checks for log-fold change distortions in public ERCC data.
+# This script checks for log-fold change distortions in public ERCC data.
 
 library(BiocFileCache)
 bfc <- BiocFileCache(ask=FALSE)
@@ -7,6 +7,7 @@ tempdir <- tempfile()
 dir.create(tempdir)
 untar(fname, exdir=tempdir)
 
+# Reading in the libraries.
 library(DropletUtils)
 sce <- read10xCounts(file.path(tempdir, "matrices_mex/ercc92"))
 library(Matrix)
@@ -37,8 +38,10 @@ ylim <- range(c(all.big, all.ref, all.lfcs))
 ave.count <- rowMeans(normed)
 
 pdf("pics/ercc.pdf")
-plot(ave.count, all.lfcs, xlab="Average count", log="x", ylab="Difference in log-values", pch=16, ylim=ylim)
-plot(ave.count, all.ref, xlab="Average count", log="x", ylab="Log-fold change in mean counts", pch=16, ylim=ylim)
-plot(ave.count, all.big, xlab="Average count", log="x", ylab="Difference in log-values", pch=16, ylim=ylim)
+par(cex.lab=1.4, cex.main=1.5, mar=c(5.1, 4.3, 4.1, 2.1))
+
+plot(ave.count, all.lfcs, xlab="Average count", log="x", ylab=expression("Difference in"~log[2]*"-values"), pch=16, ylim=ylim)
+plot(ave.count, all.ref, xlab="Average count", log="x", ylab=expression(Log[2]*"-fold change in mean counts"), pch=16, ylim=ylim)
+plot(ave.count, all.big, xlab="Average count", log="x", ylab=expression("Difference in"~log[2]*"-values"), pch=16, ylim=ylim)
 abline(h=0.18, col="red", lty=2)
 dev.off()
