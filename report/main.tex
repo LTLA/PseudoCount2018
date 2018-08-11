@@ -218,7 +218,7 @@ Each point represents a single ERCC spike-in transcript.
 (c) Differences in the mean $Z_{ig}$ for two clusters of cells with the largest and smallest median size factors in a brain scRNA-seq data set \cite{zeisel2015brain},
 compared to the log-fold change computed from the mean normalized expression.
 Each point represents a gene.
-(d) Same as (c) for the peripheral blood mononuclear cell data set from 10X Genomics.
+(d) Same as (c) for the peripheral blood mononuclear cell (PBMC) data set \cite{zheng2017massively}.
 }
 
 \label{fig:ercc}
@@ -263,11 +263,10 @@ We wondered whether this problem of artificial differences could be mitigated by
 We considered the square root, which provides variance stabilization for Poisson-distributed counts;
 and the variance stabilizing transformation (VST) for negative binomial-distributed counts from \emph{DESeq2} \cite{love2014moderated}.
 In simulations involving two groups of cells differing only in their size factors, we observed large differences in the group-specific means for non-DE genes after applying each transformation (Figure~\ref{fig:alttransform}).
-This indicates that variance stabilization does not inherently protect against spurious differences in the mean.
-Perhaps no single transformation exists that 
-(i) yields transformed values that are easily interpretable,
-(ii) provides complete variance stabilization, and
-(iii) avoids spurious differences in the means.
+This mirrors the mean-dependent nature of $\Delta_{12g}$ and indicates that variance stabilization does not inherently protect against spurious differences.
+In fact, no transformation can truly stabilize the variance at low counts, which must increase from zero at a mean of zero.
+This is problematic as many scRNA-seq data sets are dominated by low counts (93\% of non-zero counts are below 10 in the brain and PBMC data sets),
+which suggests that favouring alternative transformations on the basis of variance stabilization is largely misguided.
 
 \begin{figure}
 \centering
@@ -313,8 +312,8 @@ We attempt to characterize these clusters by identifying genes that are differen
 Here, the key is to use count-based models like edgeR \cite{robinson2010edgeR} to perform the DE analysis.
 This directly accounts for complex mean-variance relationships in the count data, thereby avoiding the need for any transformation and concomitant artefacts.
 If the analysis fails to yield any DE genes, we can infer that the separation was driven by the log-transformation and should be ignored.
-This strategy is motivated by Figures~\ref{fig:ercc}c and d, which show a noticeable difference in the observed effect sizes depending on whether they are computed from transformed or untransformed data -- possibly leading to different biological conclusions.
-Our results indicate that the use of untransformed data is more appropriate here.
+This strategy is motivated by differences in the observed effect sizes depending on whether they are computed from transformed or untransformed data (Figure~\ref{fig:ercc}), possibly leading to different biological conclusions.
+Our results indicate that untransformed data is more appropriate for these comparisons between groups.
 
 While count-based models provide some protection from spurious structure, it is often the case that we still need to use per-gene transformed values for other steps in the analysis.
 This includes visualization of expression between groups (e.g., in boxplots, or by colouring dimensionality reduction plots), for which the log-transformation is often used to preserve relative differences across a wide range of expression values.
@@ -401,12 +400,13 @@ The red line denotes the theoretical limit on $\tilde \Delta_{12g}$.}
 \label{fig:bigreal}
 \end{figure}
 
-To explore its behaviour in real data, we computed $\hat c$ for a number of real scRNA-seq data sets. 
-With $\rho=1$, we obtained $\hat c$ values of 1.36 for the 416B data set \cite{lun2017assessing}, 4.05 for the mouse brain data set \cite{zeisel2015brain} and 2.22 for the peripheral bone mononuclear cell (PBMC) data set \cite{zheng2017massively}.
+We computed $\hat c$ for a number of real scRNA-seq data sets to examine its behaviour in practical settings. 
+With $\rho=1$, we obtained $\hat c$ values of 1.36 for the 416B data set \cite{lun2017assessing}, 4.05 for the mouse brain data set \cite{zeisel2015brain} and 2.22 for the PBMC data set \cite{zheng2017massively}.
 These values are within the typical range of pseudo-counts used for exploratory analyses of RNA-seq data \cite{chen2016reads}.
-They also lie within the range of mean abundances in each data set -- we observe 217, 649 and 12636 genes with mean normalized expression values greater than $\hat c$ in the PBMC, brain and 416B data sets, respectively.
+They also lie within the range of mean abundances in each data set -- we observed 217, 649 and 12636 genes with mean normalized expression values greater than $\hat c$ in the PBMC, brain and 416B data sets, respectively.
 This indicates that the computed $\hat c$ is not so large as to entirely negate the variance stabilization from log-transformation.
-It also justifies our strategy of controlling the maximum difference $\tilde \Delta_{12g}$, which occurs when the mean is close to $\hat c$.
+It also justifies our strategy of controlling the maximum spurious difference $\tilde \Delta_{12g}$, which occurs when the mean normalized expression is close to $\hat c$.
+(Otherwise, if all genes had lower abundances than $\hat c$, the maximum difference would never be achieved and our procedure would be unnecessarily conservative.)
 
 % In theory, we could be less conservative by using gene-specific pseudo-counts.
 % These would be computed by setting $\mu_g$ to the mean normalized expression of each gene, providing a more accurate measure of $\Delta_{12g}$ than the maximum across all $\mu_g$.
