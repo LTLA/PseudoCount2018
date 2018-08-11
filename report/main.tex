@@ -84,7 +84,7 @@
 % title goes here:
 \begin{flushleft}
 {\Large
-    \textbf\newline{Using an appropriate pseudo-count for log-transformation of normalized single-cell RNA sequencing data}
+    \textbf\newline{Log-transformation introduces systematic errors in normalized single-cell RNA sequencing data}
 }
 \newline
 
@@ -113,8 +113,17 @@ Here, normalization is performed to remove inter-sample biases on the count scal
 For genes that are not differentially expressed (DE), the expectation of the normalized expression is the same between samples.
 However, the expectation of the log-normalized values may not be the same, resulting in spurious differences between samples/cells on the log-scale.
 
-In this report, we describe the nature and impact of the discrepancy between log-mean and mean-log values.
-We also show how the added pseudo-count can be increased to cap the discrepancy at the cost of reducing interpretability.
+The ideal solution would be to use methods that model the counts directly to account for the mean-variance relationship.
+For example, we could use \textit{BASiCS} \cite{vallejos2016beyond} for detecting highly variable genes or \textit{zinbwave} \cite{risso2018general} for factor analysis.
+This would avoid the need for any transformation and subsequent distortion of the expected expression.
+However, most existing methods for scRNA-seq data analysis (e.g., clustering, dimensionality reduction) do not use count-based models.
+This is due to the difficulties in estimating model parameters, often separately for each gene and/or each cell,
+compared to algorithms that only need distances between cells as input.
+Thus, it is still desirable to obtain transformed data for compatibility with existing methods.
+
+Here, we describe the nature and impact of the discrepancy between log-mean and mean-log values in real and simulated data.
+We suggest some practical strategies to protect against this effect, including the use of DE analyses with count-based models as validation.
+We also derive an expression for a larger pseudo-count that can be added prior to transformation to control the magnitude of the discrepancy for each gene.
 
 \section{Quantifying the discrepancy}
 Let $X_{ig}$ denote a random variable for a non-negative count of a gene $g$ in cell $i$.
@@ -451,14 +460,6 @@ Artifacts are most pronounced when the counts are low and there is large variati
 Both of these are often observed in data from droplet-based scRNA-seq protocols, as sequencing coverage is shared across a large number of libraries and reaction conditions are not precisely controlled for each droplet.
 We would also expect the size factors within each experiment to vary across a continuum, yielding artificial trajectories (Figure~\ref{fig:structures}b) rather than distinct clusters (Figure~\ref{fig:structures}a).
 This suggests that caution is required when interpreting trajectories that are correlated with the size factors, especially in low-coverage droplet-based data.
-
-The ideal solution would be to use methods that model the counts directly to account for the mean-variance relationship.
-For example, we could use \textit{BASiCS} \cite{vallejos2016beyond} for detecting highly variable genes or \textit{zinbwave} \cite{risso2018general} for factor analysis.
-This would avoid the need for any variance-stabilizing transformation and subsequent distortion of the expected expression.
-However, most existing methods for scRNA-seq data analysis (e.g., clustering, dimensionality reduction) do not use count-based models.
-This is due to the difficulties in estimating model parameters, often separately for each gene and/or each cell,
-compared to algorithms that only need distances between cells as input.
-Thus, it is still desirable to obtain transformed data for compatibility with existing methods.
 
 In the context of scRNA-seq analysis workflows, additional procedures can be used to reduce transformation-induced artifacts.
 For example, quality control is typically performed to remove cells with small library sizes \cite{ilicic2016classification,lun2016stepbystep}.
