@@ -9,7 +9,7 @@ fpath <- "../../../simpleSingleCell/package/vignettes"
 
 pseudos <- list()
 countsizes <- list()
-below10 <- list()
+below <- list()
 
 for (object in c("pbmc_data.rds", "brain_data.rds", "416B_data.rds")) {
     sce <- readRDS(file.path(fpath, object))
@@ -21,12 +21,12 @@ for (object in c("pbmc_data.rds", "brain_data.rds", "416B_data.rds")) {
     countsizes[[prefix]] <- sum(calcAverage(counts(sce), use_size_factors=size.facs) > big.pseudo)
 
     nzero <- sum(counts(sce) > 0)
-    below10[[prefix]] <- 1 - (sum(counts(sce) >= 10)/nzero)
+    below[[prefix]] <- 1 - (sum(counts(sce) >= 5)/nzero)
 }
 
 pseudos
 countsizes
-below10
+below
 
 ##############################################
 # Exploring the brain data set in more detail.

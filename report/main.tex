@@ -265,7 +265,7 @@ and the variance stabilizing transformation (VST) for negative binomial-distribu
 In simulations involving two groups of cells differing only in their size factors, we observed large differences in the group-specific means for non-DE genes after applying each transformation (Figure~\ref{fig:alttransform}).
 This mirrors the mean-dependent nature of $\Delta_{12g}$ and indicates that variance stabilization does not inherently protect against spurious differences.
 In fact, no transformation can truly stabilize the variance at low counts, which must increase from zero at a mean of zero.
-This is problematic as many scRNA-seq data sets are dominated by low counts (93\% of non-zero counts are below 10 in the brain and PBMC data sets),
+This is problematic as many scRNA-seq data sets are dominated by low counts -- 81\% and 89\% of non-zero counts are below 5 in the brain and PBMC data sets, respectively --
 which suggests that favouring alternative transformations on the basis of variance stabilization is largely misguided.
 
 \begin{figure}
