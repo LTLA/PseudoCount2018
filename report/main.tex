@@ -273,9 +273,9 @@ We considered the square root, which provides variance stabilization for Poisson
 and the variance stabilizing transformation (VST) for negative binomial-distributed counts from \emph{DESeq2} \cite{love2014moderated}.
 In simulations involving two groups of cells differing only in their size factors, we observed large differences in the group-specific means for non-DE genes after applying each transformation (Figure~\ref{fig:alttransform}).
 This mirrors the mean-dependent nature of $\Delta_{12g}$ and indicates that variance stabilization does not inherently protect against spurious differences.
-In fact, no transformation can truly stabilize the variance at low counts, which must increase from zero at a mean of zero.
+In fact, no transformation can truly stabilize the variance at low counts, as the variance is zero at a mean of zero and must always increase.
 This is problematic as many scRNA-seq data sets are dominated by low counts -- 81\% and 89\% of non-zero counts are below 5 in the brain and PBMC data sets, respectively --
-which suggests that favouring transformations on the basis of variance stabilization is largely misguided.
+which suggests that favouring a transformation on the basis of its variance stabilization is largely misguided.
 
 \begin{figure}
 \centering
@@ -435,7 +435,6 @@ Our recommendation considers the worst-case scenario where there are systematic 
 and may not be required in situations where the distribution of size factors is the same across the population.
 It is also possible to use log-values computed with $\hat c$ in the initial exploratory analysis, which may reduce the risk of detecting the spurious structures in the first place.
 However, this strategy is more difficult to justify as the magnitude of the error in the distance between cells does not have a straightforward interpretion.
-Any benefit from an increased pseudo-count requires that the reduction in error is greater than the shrinkage of genuine biological differences, and this is not guaranteed.
 
 Pseudo-counts are often set to unity for practical reasons that have little to do with avoiding spurious differences.
 One reason is to ensure that zero counts always yield zero log-values, which ensures that sparse matrix representations are still effective for reducing memory usage when analyzing large data sets.
