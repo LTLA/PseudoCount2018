@@ -1,6 +1,6 @@
-# Pseudo-count choice for log-transformed scRNA-seq data
+# Errors upon log-transformation of scRNA-seq data
 
-This repository contains code to explore some of the consequences of pseudo-count choice in log-transformation of scRNA-seq data.
+This repository contains code to explore some of the consequences of log-transformation of scRNA-seq data.
 The `report` subdirectory contains LaTeX files for the report.
 The `scripts` subdirectory contains R code to reproduce the analyses described in the report:
 
