@@ -95,7 +95,7 @@ Aaron Lun\textsuperscript{1,*}
 \bigskip
 \bf{1} Cancer Research UK Cambridge Institute, University of Cambridge, Li Ka Shing Centre, Robinson Way, Cambridge CB2 0RE, United Kingdom \\
 \bigskip
-
+* Email: aaron.lun@cruk.cam.ac.uk
 \end{flushleft}
 
 \section{Background}
@@ -265,7 +265,7 @@ The discrepancy described in Equation~\ref{eqn:spuriousdiff} is also consistent 
 In their study, Hicks \emph{et al.} show that the log-normalized expression of many genes is anticorrelated with the ``detection rate'' (i.e. the percentage of non-zero counts in each cell) in a variety of scRNA-seq data sets.
 We note that the detection rate is often strongly associated with the size factor due to the sparsity of the data.
 Any increases to the coverage of a cell (and thus the size factor $s_i$) will naturally increase the detection rate as fewer zeroes are sampled,
-such that both are correlated with any error induced by the log-transformation.
+such that both are correlated with the error from the log-transformation.
 However, some caution is required when interpreting these correlations in real data due to the conflation of technical effects with genuine biological factors such as, e.g., differences in RNA content across cell types \cite{islam2011characterization,lun2017assessing}.
 
 We wondered whether this problem of artificial differences could be mitigated by using alternative transformations.
@@ -388,7 +388,7 @@ The red dashed line represents the theoretical bound on the maximum difference.
 
 Equation~\ref{eqn:pseudo} is most obviously applied to specific comparisons between two groups of cells.
 In such cases, we can set $s_1$ and $s_2$ to the average size factor of each group to control $\tilde\Delta_{12g}$ (Figure~\ref{fig:bigreal}a).
-In practice, though, downstream procedures such as clustering will compare many cells to one another.
+However, in practice, downstream procedures such as clustering will compare many cells to one another.
 Consequently, the exact choices of $s_1$ and $s_2$ are not obvious when calculating a single pseudo-count for the entire data set.
 A general strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
 (or robust equivalents thereof, e.g., the 5\textsuperscript{th} and 95\textsuperscript{th} percentiles).
