@@ -98,6 +98,14 @@ Aaron Lun\textsuperscript{1,*}
 * Email: aaron.lun@cruk.cam.ac.uk
 \end{flushleft}
 
+\section*{Abstract}
+Applying a log-transformation to normalized data is one of the most common procedures in exploratory analyses of single-cell RNA sequencing (scRNA-seq) data.
+Normalization removes systematic biases in sequencing coverage between cells, while the log-transformation ensures that algorithms operate on relative rather than absolute differences in expression.
+We show that the log-transformation can introduce systematic differences between cells with different coverage,
+leading to spurious non-zero differences in expression and artificial population structure in simulations.
+We observe similar effects in real scRNA-seq data where the difference in transformed values between groups of cells is not an accurate proxy for the log-fold change.
+We provide some practical recommendations to overcome this effect and derive an expression for a larger pseudo-count that controls the transformation-induced error to a specified threshold.
+
 \section{Background}
 Log-transformed expression values are widely used in exploratory analyses of single-cell RNA sequencing (scRNA-seq) data.
 This is driven by the simplicity of the log-transformation and the ease of interpretation of the transformed values.
