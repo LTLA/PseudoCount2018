@@ -550,6 +550,15 @@ The size factor for cell $i$ was defined as $\lambda_i$ after being scaled to a 
 We applied the tested transformations -- square root, log, and VST -- to the normalized expression values, using a pseudo-count of 1 for the log$_2$-transformation and \code{fitType="mean"} for the \textit{DESeq2} VST.
 We then computed the mean of the transformed values in each group for each gene.
 
+\subsection{Implementation details}
+All analyses were performed using R 3.5.0 with packages from the open-source Bioconductor project \cite{huber2015orchestrating}.
+We used \textit{scater} 1.9.14, \textit{DropletUtils} v1.1.8, \textit{BiocFileCache} v1.5.5 and \textit{DESeq2} v1.21.16. 
+All code is publicly available on GitHub at \url{https://github.com/LTLA/PseudoCount2018}.
+
+\section{Acknowledgements}
+We would like to thank Dr.\ John Marioni for helpful suggestions on the manuscript.
+This work was supported by core funding from Cancer Research UK (award no. 17197 to Dr.\ Marioni).
+
 \bibliography{ref}
 \bibliographystyle{unsrt}
 
