@@ -75,11 +75,24 @@ sceX <- normalize(sce, return_log=FALSE)
 min.norm <- rowMeans(normcounts(sceX)[,min.group])
 max.norm <- rowMeans(normcounts(sceX)[,max.group])
 
+# Increasing the added pseudo-count for size factors.
+big.pseudo <- abs(1/med.sf[[chosen.min]] - 1/med.sf[[chosen.max]])
+sceY <- normalize(sce, log_exprs_offset = big.pseudo, preserve_zeroes=TRUE)
+min.big <- rowMeans(logcounts(sceY)[,min.group])
+max.big <- rowMeans(logcounts(sceY)[,max.group])
+
+# Creating a plot.    
 pdf("pics/real_pbmc.pdf")
 par(cex.lab=1.4, cex.main=1.5, mar=c(5.1, 4.3, 4.1, 2.1))
 plot(max.log - min.log, log2((max.norm + 1)/(min.norm+1)),
     xlab=expression("Difference in"~log[2]*"-values"),
     ylab=expression(Log[2]*"-fold change"), cex=0.5)
 abline(0, 1, col="red")
+
+plot(max.big - min.big, log2((max.norm + big.pseudo)/(min.norm+big.pseudo)),
+    xlab=expression("Difference in"~log[2]*"-values"),
+    ylab=expression(Log[2]*"-fold change"), cex=0.5)
+abline(0, 1, col="red")
+abline(-(1/log(2)/8), 1, col="red", lty=2)
 dev.off()
 
