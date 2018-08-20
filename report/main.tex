@@ -99,12 +99,12 @@ Aaron Lun\textsuperscript{1,*}
 \end{flushleft}
 
 \section*{Abstract}
-Applying a log-transformation to normalized data is one of the most common procedures in exploratory analyses of single-cell RNA sequencing (scRNA-seq) data.
-Normalization removes systematic biases in sequencing coverage between cells, while the log-transformation ensures that algorithms operate on relative rather than absolute differences in expression.
+Applying a log-transformation to normalized expression values is one of the most common procedures in exploratory analyses of single-cell RNA sequencing (scRNA-seq) data.
+Normalization removes systematic biases in sequencing coverage between cells, while the log-transformation ensures that downstream computational procedures operate on relative rather than absolute differences in expression.
 We show that the log-transformation can introduce systematic errors when cells vary in sequencing coverage,
 leading to spurious non-zero differences in expression and artificial population structure in simulations.
 We observe similar effects in real scRNA-seq data where the difference in transformed values between groups of cells is not an accurate proxy for the log-fold change.
-We provide some practical recommendations to overcome this effect and derive an expression for a larger pseudo-count that controls the transformation-induced error to a specified threshold.
+We provide some practical recommendations to overcome this effect and analytically derive an expression for a larger pseudo-count that controls the transformation-induced error to a specified threshold.
 
 \section{Background}
 Log-transformed expression values are widely used in exploratory analyses of single-cell RNA sequencing (scRNA-seq) data.
@@ -565,7 +565,7 @@ All code is publicly available on GitHub at \url{https://github.com/LTLA/PseudoC
 
 \section{Acknowledgements}
 We would like to thank Dr.\ John Marioni for helpful suggestions on the manuscript.
-This work was supported by core funding from Cancer Research UK (award no. 17197 to Dr.\ Marioni).
+This work was supported by core funding from Cancer Research UK (award no. A17197 to Dr.\ Marioni).
 
 \bibliography{ref}
 \bibliographystyle{unsrt}
