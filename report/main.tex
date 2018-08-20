@@ -84,7 +84,7 @@
 % title goes here:
 \begin{flushleft}
 {\Large
-    \textbf\newline{Log-transformation introduces systematic errors in normalized single-cell RNA sequencing data}
+    \textbf\newline{Overcoming systematic errors caused by log-transformation of normalized single-cell RNA sequencing data}
 }
 \newline
 
@@ -101,7 +101,7 @@ Aaron Lun\textsuperscript{1,*}
 \section*{Abstract}
 Applying a log-transformation to normalized data is one of the most common procedures in exploratory analyses of single-cell RNA sequencing (scRNA-seq) data.
 Normalization removes systematic biases in sequencing coverage between cells, while the log-transformation ensures that algorithms operate on relative rather than absolute differences in expression.
-We show that the log-transformation can introduce systematic differences between cells with different coverage,
+We show that the log-transformation can introduce systematic errors when cells vary in sequencing coverage,
 leading to spurious non-zero differences in expression and artificial population structure in simulations.
 We observe similar effects in real scRNA-seq data where the difference in transformed values between groups of cells is not an accurate proxy for the log-fold change.
 We provide some practical recommendations to overcome this effect and derive an expression for a larger pseudo-count that controls the transformation-induced error to a specified threshold.
@@ -205,7 +205,7 @@ For simplicity, we only show results for scenarios where $a_1 \ge a_2$.
 
 We verified the existence of this effect in real scRNA-seq data from the 10X Genomics platform \cite{zheng2017massively}.
 We used the publicly available ERCC data set (see Methods) in which gel emulsion beads containing ERCC spike-in transcripts were captured into droplets.
-The composition of the ERCC transcripts should be constant in all droplets, so there should not be any difference in the expression profiles after library size normalization.
+The composition of the ERCC spike-in set should be constant in all droplets, so there should not be any difference in the expression profiles after library size normalization.
 However, we observed a systematic non-zero difference in the mean log-expression values when comparing the smallest and largest droplets (Figure~\ref{fig:ercc}a).
 This is fully attributable to the log-transformation, as no such difference is present in the log-fold change between the mean normalized expression values (Figure~\ref{fig:ercc}b).
 Discrepancies between the difference in mean log-values and the log-fold change are also present in real scRNA-seq data sets with variable size factors (Figures~\ref{fig:ercc}c, d).
@@ -270,7 +270,7 @@ Each point represents a cell coloured by its value of $s_i$.
 \end{figure}
 
 The discrepancy described in Equation~\ref{eqn:spuriousdiff} is also consistent with the observations from Hicks \emph{et al.} \cite{hicks2017missing}.
-In their study, Hicks \emph{et al.} show that the log-normalized expression of many genes is anticorrelated with the ``detection rate'' (i.e. the percentage of non-zero counts in each cell) in a variety of scRNA-seq data sets.
+In their study, Hicks \emph{et al.} show that the log-normalized expression of many genes is anticorrelated with the ``detection rate'' (i.e., the percentage of non-zero counts in each cell) in a variety of scRNA-seq data sets.
 We note that the detection rate is often strongly associated with the size factor due to the sparsity of the data.
 Any increases to the coverage of a cell (and thus the size factor $s_i$) will naturally increase the detection rate as fewer zeroes are sampled,
 such that both are correlated with the error from the log-transformation.
@@ -321,12 +321,12 @@ The red line represents a fitted loess curve.
 \end{figure}
 
 \section{Validating structure with DE analyses}
-In our opinion, the most effect of greatest concern is the formation of spurious clusters and trajectories.
-This can easily result in incorrect biological conclusions from an exploratory analysis of scRNA-seq data.
+In our opinion, the effect of greatest concern is the formation of spurious clusters and trajectories.
+This can easily result in incorrect biological conclusions from an exploratory analysis of a scRNA-seq data set.
 Fortunately, careful further analysis can provide some protection against these artificial structures.
 Say that we identify spurious clusters like those in Figure~\ref{fig:structures}.
 We attempt to characterize these clusters by identifying genes that are differentially expressed between them.
-Here, the key is to use count-based models like edgeR \cite{robinson2010edgeR} to perform the DE analysis.
+Here, the key is to use count-based models like \textit{edgeR} \cite{robinson2010edgeR} to perform the DE analysis.
 This directly accounts for complex mean-variance relationships in the count data, thereby avoiding the need for any transformation and concomitant artefacts \cite{ohara2010do}.
 If the analysis fails to yield any DE genes, we can infer that the separation was driven by the log-transformation and should be ignored.
 This strategy is motivated by the presence of differences in the observed effect sizes computed from transformed or untransformed data (Figure~\ref{fig:ercc}), possibly leading to different biological conclusions.
@@ -351,16 +351,16 @@ We assume that $X_{ig}$ follows a negative binomial (NB) distribution with mean 
 This means that we can simplify the expression for $\Delta_{12g}$ to
 \begin{align}
 \Delta_{12g} 
-&\approx \frac{\mu_g s_1^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} - \frac{\mu_g s_2^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} \nonumber \\
-&= \frac{\mu_g (s_1^{-1} - s_2^{-1})}{2(\mu_g + c)^2} \;. \label{eqn:nberr}
+&\approx \frac{\mu_g s_2^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} - \frac{\mu_g s_1^{-1} + \varphi \mu_g^2}{2(\mu_g + c)^2} \nonumber \\
+&= \frac{\mu_g (s_2^{-1} - s_1^{-1})}{2(\mu_g + c)^2} \;. \label{eqn:nberr}
 \end{align}
 This reaches its maximum absolute value for positive $\mu_g$ when $\mu_g = c > 0$, yielding 
 \[
-\tilde\Delta_{12g} = \left|\frac{(s_1^{-1} - s_2^{-1})}{8c}\right| \;.
+\tilde\Delta_{12g} = \left|\frac{(s_2^{-1} - s_1^{-1})}{8c}\right| \;.
 \]
 We can control the maximum error $\tilde\Delta_{12g}$ below a threshold $\tau$ by setting  
 \begin{equation}
-    c = \rho |s_1^{-1} - s_2^{-1}| \;, \label{eqn:pseudo} 
+    c = \rho |s_2^{-1} - s_1^{-1}| \;, \label{eqn:pseudo} 
 \end{equation}
 where $\tau = (\rho 8)^{-1}$.
 If we set $\rho = 1$, the maximum difference in the mean log-values should be 0.125 (or $[8\log(2)]^{-1} \approx 0.18$, on the $\log_2$-scale).
@@ -386,7 +386,7 @@ At higher dispersions, the bound becomes less accurate but is nonetheless still 
     \caption{}
 \end{subfigure}
 \caption{Maximum difference in the log-expression values for non-DE genes between groups of cells differing only in their size factors, 
-after using an increased pseudo-count of $|s_1^{-1} - s_2^{-1}|$ prior to log-transformation.
+after adding the pseudo-count from Equation~\ref{eqn:pseudo} with $\rho=1$ prior to log-transformation.
 Simulations and calculations were performed as described for Figure~\ref{fig:maxeffect}.
 Results are only shown for scenarios where $s_1 > s_2$.
 The red dashed line represents the theoretical bound on the maximum difference.
@@ -396,18 +396,18 @@ The red dashed line represents the theoretical bound on the maximum difference.
 
 Equation~\ref{eqn:pseudo} is most obviously applied to specific comparisons between two groups of cells.
 In such cases, we can set $s_1$ and $s_2$ to the average size factor of each group to control $\tilde\Delta_{12g}$ (Figure~\ref{fig:bigreal}a).
-However, in practice, downstream procedures such as clustering will compare many cells to one another.
-Consequently, the exact choices of $s_1$ and $s_2$ are not obvious when calculating a single pseudo-count for the entire data set.
-A general strategy is to set $s_1$ to the smallest size factor and $s_2$ to the largest size factor
+However, this may not be generally possible if more than two groups are involved or when groups are not well-defined, e.g., trajectories.
+The exact choices of $s_1$ and $s_2$ are not obvious when calculating a single pseudo-count for the entire data set.
+We suggest setting $s_1$ to the smallest size factor and $s_2$ to the largest size factor
 (or robust equivalents thereof, e.g., the 5\textsuperscript{th} and 95\textsuperscript{th} percentiles).
-This ensures that the difference in log-values for a non-DE gene does not exceed the theoretical upper bound for any pair of cells.
+This ensures that the difference in log-values for a non-DE gene does not exceed the theoretical upper bound for most pairs of cells.
 We thus define our empirical pseudo-count as
 \[
 \hat c = \max\{1, \rho |s_{min}^{-1} - s_{max}^{-1}|\} \;,
 \]
 which ensures that the pseudo-count is at least unity when all size factors are equal.
 We suggest setting $\rho=1$, which provides a compromise between restricting $\tilde\Delta_{12g}$ and keeping the pseudo-count as small as possible.
-Applying this strategy to the ERCC data set limits the maximum error close to the theoretical upper bound (Figure~\ref{fig:bigreal}a).
+Applying this strategy to the ERCC data set limits the maximum error close to the theoretical upper bound (Figure~\ref{fig:bigreal}b).
 
 \begin{figure}[btp]
 \centering
@@ -448,13 +448,13 @@ It also justifies our strategy of controlling the maximum spurious difference $\
 
 \section{Practical use of larger pseudo-counts}
 We recommend using log-expression values computed with $\hat c$ during characterisation of population structures identified from exploratory analyses.
-By controlling $\tilde\Delta_{12g} \le \tau$, we can mitigate the effects of misleading differences upon visualizing expression values, as previously discussed.
+This considers the worst-case scenario where there are systematic differences in the size factors between cells in different clusters or along trajectories. 
+(Conversely, it is not required when the distribution of size factors is the same across clusters or trajectories.)
+By controlling $\tilde\Delta_{12g} \le \tau$, we can mitigate the effects of misleading differences during visualization of expression, as previously discussed.
 Methods like TREAT \cite{mccarthy2009testing} can also be applied to test whether the observed log-difference is significantly greater than the theoretical limit $\tau$.
 This provides a statistically rigorous alternative for DE analyses if count-based models are impractical.
-Our recommendation considers the worst-case scenario where there are systematic differences in the size factors between cells in different clusters or along trajectories, 
-and may not be required in situations where the distribution of size factors is the same across the population.
-It is also possible to use log-values computed with $\hat c$ in the initial exploratory analysis, which may reduce the risk of detecting the spurious structures in the first place.
-However, this strategy is more difficult to justify as the magnitude of the error in the distance between cells does not have a straightforward interpretion.
+It is also possible to use log-values computed with $\hat c$ in the initial exploratory analysis, which may reduce the risk of detecting spurious structures in the first place.
+However, this is more difficult to justify as there is no straightforward interpretion for an ``acceptable'' threshold in the error in the distance between cells.
 
 Pseudo-counts are often set to unity for practical reasons that have little to do with avoiding spurious differences.
 One reason is to ensure that zero counts always yield zero log-values, which ensures that sparse matrix representations are still effective for reducing memory usage when analyzing large data sets.
@@ -476,7 +476,7 @@ In contrast, the approximation of the log-fold change by differences in log-valu
 Increasing the pseudo-count counteracts this effect such that the log-fold change estimates are not consistent with respect to coverage.
 
 \section{Discussion}
-It is worth speculating on some real situations in which the log-transformation is most likely to cause distortions.
+We can speculate on the practical settings in which the log-transformation is most likely to cause distortions.
 Artifacts are most pronounced when the counts are low and there is large variation in the size factors across cells.
 Both of these are often observed in data from droplet-based scRNA-seq protocols, as sequencing coverage is shared across a large number of libraries and reaction conditions are not precisely controlled for each droplet.
 We would also expect the size factors within each experiment to vary across a continuum, yielding artificial trajectories (Figure~\ref{fig:structures}b) rather than distinct clusters (Figure~\ref{fig:structures}a).
@@ -537,7 +537,7 @@ PCA was performed on the log-normalized expression values (computed with a pseud
 and cells were clustered based on their PC scores using the shared nearest neighbours method \cite{xu2015identification}.
 In each data set, we identified the two clusters with the largest and smallest median size factors.
 We computed the difference in the mean log-expression values between clusters and compared this to the log-fold change between clusters calculated from the mean normalized expression.
-Note that kog-fold changes were calculated after adding a pseudo-count of 1 to the means of both groups,
+Note that log-fold changes were calculated after adding a pseudo-count of 1 to the means of both groups,
 such that any discrepancy between the difference in mean log-values and the log-fold change is an estimate of $\Delta_{12g}$.
 
 \subsection{Simulations with artifical structures}
@@ -546,7 +546,7 @@ We set $\lambda_i=0.1$ for half of the cells and $\lambda_i=10$ for the other ha
 The size factor for each cell was defined as $\lambda_i$ after being scaled to a mean of unity across cells.
 We computed log-normalized expression values for all cells with a pseudo-count of 1, as previously described.
 We then performed PCA and examined the distribution of cells along the first two PCs.
-We also repeated this simulation where $b_i$ was sampled from a Uniform$(0.1, 5)$ distribution instead.
+We also repeated this simulation where $\lambda_i$ was sampled from a Uniform$(0.1, 5)$ distribution instead.
 Note that all genes are non-DE in these simulations, i.e., $E(X_{ig}/s_i)$ is constant for all $g$ and $i$.
 
 \subsection{Simulations with different transformations}
