@@ -1,6 +1,8 @@
 # Errors upon log-transformation of scRNA-seq data
 
-This repository contains code to explore some of the consequences of log-transformation of scRNA-seq data.
+This repository contains code and manuscript files for the paper **Overcoming systematic errors caused by log-transformation of normalized single-cell RNA sequencing data**
+by [Lun (2018)](https://doi.org/10.1101/404962).
+
 The `report` subdirectory contains LaTeX files for the report.
 The `scripts` subdirectory contains R code to reproduce the analyses described in the report:
 
